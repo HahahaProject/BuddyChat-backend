@@ -15,7 +15,7 @@ const io = new Server(server);
 
 app.get("/", (req, res) => {
   res.sendFile(
-    "/Users/jung-yiryung/Desktop/buddyChat_demo/frontend/index.html"
+    "/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend/index.html"
   );
 });
 
