@@ -32,10 +32,11 @@ io.on("connection", (socket) => {
    *    -
    *
    */
-  socket.on("random-match", async (_, callback) => {
+  socket.on("random-match", async () => {
     //대기열 큐에 넣는다.
     console.log("random-match 실행중");
     let user = queueIn(socket.id);
+    socket.emit("status-queue", { status: 201, message: "queueIn" });
     let waitingResult;
     console.log("user값", user);
     if (!user) {
@@ -64,10 +65,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("join", (roomName) => {
-    socket.join(`${roomName}`);
-    console.log("다른소켓의 socket.rooms", socket.rooms);
-  });
   // 만약에 룸에 포함된 사람이 아무도 없으면 룸 삭제해야함.
   socket.on("match-cancel", () => {
     // matching cancel

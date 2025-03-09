@@ -20,13 +20,17 @@
     socket.on("connection", () => {
       console.log("웹소켓 연결");
     });
+
     document.getElementById("randomButton").addEventListener("click", () => {
-      socket.emit("random-match", null, (response) => {
-        console.log("룸이름", response.roomName);
-        roomName = response.roomName;
-      });
+      socket.emit("random-match");
     });
     //
+
+    socket.on("status-queue", (data) => {
+      console.log("실행됨");
+      // 왜 안보이지?
+      console.log("status", data);
+    });
     socket.on("match-success", (matchingTime) => {
       console.log("matchingTime", matchingTime);
     });
