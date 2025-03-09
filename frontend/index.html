@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <button id="randomButton">랜덤매칭</button>
+    <button id="leaveButton">대화방에서 나가기</button>
+    <div>
+      <p id="stopWatch"></p>
+      <button id="stopMatchButton">매칭취소</button>
+    </div>
+  </body>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let roomName;
+    socket.on("connection", () => {
+      console.log("웹소켓 연결");
+    });
+    document.getElementById("randomButton").addEventListener("click", () => {
+      socket.emit("random-match", null, (response) => {
+        console.log("룸이름", response.roomName);
+        roomName = response.roomName;
+      });
+    });
+    //
+    socket.on("match-success", (matchingTime) => {
+      console.log("matchingTime", matchingTime);
+      socket.emit("join-room");
+    });
+    socket.on("matchingtime-start", () => {
+      // 이 시간과 현재시간간의 차이 계산해서
+      // 그 시간부터 20초까지 세기
+      let stopWatch = document.getElementById("stopWatch");
+      const clientTime = Date.now();
+      let interval = setInterval(() => {
+        stopWatch.innerHTML = new Date().toString();
+      }, 1000);
+    });
+    socket.emit("match-cancel", () => {
+      console.log("매칭실패");
+    });
+    socket.on("match-fail", () => {
+      console.log("매칭실패"); // 이게 왜 안나올가?
+    }); // 다시매칭 페이지 보여주든가 해야함
+    // 화면 바뀌고 매칭날짜알림출력
+    // 20초 지나면 다시 random-match
+    socket.on("midnight-alert");
+    // 나가기 버튼 누르면
+    document.getElementById("leaveButton").addEventListener("click", () => {
+      console.log("client에서 roomName", roomName);
+      socket.emit("leaving-room", roomName);
+    });
+  </script>
+</html>
