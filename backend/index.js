@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { queueIn, waiting20 } from "./matching.js";
 import { matchCancel } from "./matching.js";
 import { currentDate, matchingTime } from "./time.js";
+import { queueEvent } from "./matching.js";
 const app = express();
 const server = http.createServer(app);
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -21,8 +22,6 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
   console.log("유저 연결됨");
   console.log("server.socketId", socket.id);
-  let roomName;
-  // 같은 룸이름 가능?
   /**
    * 1. 랜덤매칭을 하면
    *    - 한번 매칭되었던 사람은 매칭이 되면 안되구 (중복체크)
@@ -33,29 +32,16 @@ io.on("connection", (socket) => {
    *    -
    *
    */
-
-  // 랜덤매칭
-  /**
-   * 1. 매칭 큐 안에 넣는다.
-   * 2. 큐에 있다 -> 대기중이다. 그럼 큐에 있는동안
-   * 매칭상대를 찾는다.
-   * 3. 큐에 없다. -> 대기중이 아니다.
-   */
   socket.on("random-match", async (_, callback) => {
     //대기열 큐에 넣는다.
     console.log("random-match 실행중");
     let user = queueIn(socket.id);
+    let waitingResult;
     console.log("user값", user);
     if (!user) {
-      // 20초동안 다른 사용자가 오는지 기다려야함.
-      // 클라이언트시간이랑 서버시간이 같아야하는데
-      // 20초동안 코드가 다음으로 넘어가지 않고 기다려야함.
-      /**
-       * promise로 기다림.
-       */
       try {
         socket.emit("matchingtime-start");
-        let waitingResult = await waiting20();
+        waitingResult = await waiting20();
         console.log("promise waiting 결과", waitingResult);
       } catch (err) {
         socket.emit("match-fail", () => {
@@ -63,20 +49,19 @@ io.on("connection", (socket) => {
         });
       }
 
-      if (user) {
+      if (waitingResult) {
+        console.log("2", waitingResult[2]);
+        socket.join(`${waitingResult[2]}`);
         socket.emit("match-success", matchingTime);
+        console.log("socketId와 room", socket.rooms);
       }
     } else {
+      console.log("두번째 user는 여기 실행");
+      queueEvent.emit("20sStop");
+      socket.join(`${user.roomName}`);
       socket.emit("match-success", matchingTime);
+      console.log("socketId와 room", socket.rooms);
     }
-    //이걸 어덯게 만들어야할지 모르겟네..
-    const serverTime = new Date();
-    console.log("현재시간", serverTime);
-  });
-
-  // 두 사용자를 room에 넣는다.
-  socket.on("join-room", () => {
-    socket.join(`${roomName}`);
   });
 
   socket.on("join", (roomName) => {

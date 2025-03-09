@@ -29,7 +29,6 @@
     //
     socket.on("match-success", (matchingTime) => {
       console.log("matchingTime", matchingTime);
-      socket.emit("join-room");
     });
     socket.on("matchingtime-start", () => {
       // 이 시간과 현재시간간의 차이 계산해서
@@ -39,6 +38,13 @@
       let interval = setInterval(() => {
         stopWatch.innerHTML = new Date().toString();
       }, 1000);
+    });
+
+    document.getElementById("stopMatchButton").addEventListener("click", () => {
+      socket.emit("random-match", null, (response) => {
+        console.log("룸이름", response.roomName);
+        roomName = response.roomName;
+      });
     });
     socket.emit("match-cancel", () => {
       console.log("매칭실패");
