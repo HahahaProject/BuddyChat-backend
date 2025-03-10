@@ -13,6 +13,9 @@ const server = http.createServer(app);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const io = new Server(server);
 
+app.use(
+  express.static("/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend")
+);
 app.get("/", (req, res) => {
   res.sendFile(
     "/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend/index.html"
