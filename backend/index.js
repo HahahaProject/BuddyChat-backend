@@ -45,6 +45,7 @@ io.on("connection", (socket) => {
         waitingResult = await waiting20();
         console.log("promise waiting 결과", waitingResult);
       } catch (err) {
+        socket.emit("status-queue", { status: 408, message: "queueOut" });
         socket.emit("match-fail", () => {
           console.log("매칭실패 emit");
         });
@@ -54,6 +55,7 @@ io.on("connection", (socket) => {
         console.log("2", waitingResult[2]);
         socket.join(`${waitingResult[2]}`);
         socket.emit("match-success", matchingTime);
+        socket.emit("status-queue", { status: 200, message: "queueOut" });
         console.log("socketId와 room", socket.rooms);
       }
     } else {
@@ -61,15 +63,18 @@ io.on("connection", (socket) => {
       queueEvent.emit("20sStop");
       socket.join(`${user.roomName}`);
       socket.emit("match-success", matchingTime);
+      socket.emit("status-queue", { status: 200, message: "queueOut" });
       console.log("socketId와 room", socket.rooms);
     }
   });
 
-  // 만약에 룸에 포함된 사람이 아무도 없으면 룸 삭제해야함.
   socket.on("match-cancel", () => {
-    // matching cancel
     matchCancel(socket.id);
+    socket.emit("status-queue", { status: 204, message: "queueOut" });
   });
+
+  //-----------------------------
+  // 만약에 룸에 포함된 사람이 아무도 없으면 룸 삭제해야함.
 
   socket.on("leaving-room", (roomName) => {
     // 룸이름을 어덯게 가지고오지?

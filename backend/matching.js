@@ -64,8 +64,19 @@ export const queueIn = (socketId) => {
 
 export const matching = () => {};
 export const matchCancel = (socketId) => {
+  console.log("삭제될 소켓Id", socketId);
+  //20초 그만
+  queueEvent.emit("20sStop");
   //해당 socket에 해당하는 사용자 대기열에서 삭제
-  //
+  let identNumber = 0;
+  for (let elem of queue) {
+    if (elem == socketId) {
+      queue.splice(identNumber, 1);
+    } else {
+      identNumber++;
+    }
+  }
+  console.log("현재 queue", queue);
 };
 
 export const waiting20 = () => {
