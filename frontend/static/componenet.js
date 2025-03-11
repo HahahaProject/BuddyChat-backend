@@ -6,19 +6,22 @@ const createElement = (domString) => {
 
 const fetchData = async (url) => {
   const res = await fetch(url);
+  console.log("res가 뭔데 ", res);
   const json = await res.json();
   return json;
 };
 
 export const Home = async () => {
-  const result = await fetchData("/");
-  console.log("result", result);
+  return createElement(`
+    <h2>저희 Buddychat은요...</h2>`);
 };
-export const RandomChat = async () => {
+export const RandomMatch = async () => {
   return createElement(`<button id="randomButton">랜덤매칭</button>
       <p id="stopWatch"></p>
-      <button id="stopMatchButton">매칭취소</button>`);
+      <button id="stopMatchButton">매칭취소</button>
+      `);
 };
+export const ChatRoom = async () => {};
 export const GroupChat = async () => {};
 
 export const NotFound = () => {
