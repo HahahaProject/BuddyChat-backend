@@ -17,8 +17,6 @@ socket.on("status-queue", (data) => {
 });
 socket.on("match-success", (matchingTime) => {
   // 이때 채팅룸으로 페이지 이동하면 안됨
-
-  location.href = "./chatRoom.html";
   console.log("matchingTime", matchingTime);
 });
 socket.on("matchingtime-start", () => {
@@ -42,5 +40,14 @@ socket.on("match-fail", () => {
 }); // 다시매칭 페이지 보여주든가 해야함
 // 화면 바뀌고 매칭날짜알림출력
 // 20초 지나면 다시 random-match
-socket.on("midnight-alert");
-// 나가기 버튼 누르면
+
+//----------------------- 대화방
+
+socket.emit("message", message);
+socket.on("message", (message, time) => {
+  console.log("message", message);
+  console.log("time", time);
+});
+
+socket.emit("leaving-room");
+socket.on("user-exit-chat");

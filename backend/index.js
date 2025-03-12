@@ -6,13 +6,14 @@ import { dirname, join } from "node:path";
 import { v4 as uuidv4 } from "uuid";
 import { queueIn, waiting20 } from "./matching.js";
 import { matchCancel } from "./matching.js";
-import { currentDate, matchingTime } from "./time.js";
+import { currentDate, time, messageTime, calLapseTime } from "./time.js";
 import { queueEvent } from "./matching.js";
 const app = express();
 const server = http.createServer(app);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const io = new Server(server);
-
+let socketRoomId;
+let chatStartTime, chatEndTime, chatLapseTime;
 app.use(
   express.static("/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend")
 );
@@ -57,40 +58,60 @@ io.on("connection", (socket) => {
       if (waitingResult) {
         console.log("2", waitingResult[2]);
         socket.join(`${waitingResult[2]}`);
-        socket.emit("match-success", matchingTime);
+        chatStartTime = Date.now();
+        socket.emit("match-success", time);
         socket.emit("status-queue", { status: 200, message: "queueOut" });
         console.log("socketId와 room", socket.rooms);
+        socketRoomId = [...socket.rooms];
       }
     } else {
       console.log("두번째 user는 여기 실행");
       queueEvent.emit("20sStop");
       socket.join(`${user.roomName}`);
-      socket.emit("match-success", matchingTime);
+      chatStartTime = Date.now();
+      socket.emit("match-success", time);
       socket.emit("status-queue", { status: 200, message: "queueOut" });
       console.log("socketId와 room", socket.rooms);
+      socketRoomId = [...socket.rooms];
     }
   });
+
+  // 여기
 
   socket.on("match-cancel", () => {
     matchCancel(socket.id);
     socket.emit("status-queue", { status: 204, message: "queueOut" });
   });
 
-  //-----------------------------
-  // 만약에 룸에 포함된 사람이 아무도 없으면 룸 삭제해야함.
-
-  socket.on("leaving-room", (roomName) => {
-    // 룸이름을 어덯게 가지고오지?
-    console.log("roomNAme", roomName);
-    socket.leave(`${roomName}`);
-    console.log("socket.rooms여부", socket.rooms);
+  //-------------   여기서 부터 대화방
+  socket.on("message", (message) => {
+    console.log("socketRoodId", socketRoomId);
+    console.log("message", message);
+    io.to(socketRoomId[1]).emit("message", message, messageTime);
   });
 
-  const messageTime = `
-    ${currentDate.getHours()}:${currentDate.getMinutes()}}`;
+  // io.emit("message");
 
-  socket.on("message", (messageTime) => {});
-  io.emit("message");
+  // 만약에 룸에 포함된 사람이 아무도 없으면 룸 삭제해야함.
+  // 룸삭제 ?
+  /**
+   * 대화방에서 다시찾기나 홈으로 돌아갈 시 남은 사람도 방을 leave해야헤
+   *
+   */
+  socket.on("leaving-room", () => {
+    chatEndTime = Date.now();
+    console.log("chatEndtime", chatEndTime);
+    console.log("chatStartTime", chatStartTime);
+    chatLapseTime = calLapseTime(chatEndTime, chatStartTime);
+    io.to(socketRoomId[1]).emit("user-exit-chat", time, chatLapseTime);
+    /**
+     * 채팅 종료시간이랑 채팅 한 시간 보내기.
+     * ㅊㅐ팅시간을 어덯게 측정하지
+     * Date.now()로 빼서 측정.
+     */
+    socket.leave(socketRoomId[1]);
+    console.log("socket.rooms여부", socket.rooms);
+  });
 });
 
 server.listen(5000, () => {
