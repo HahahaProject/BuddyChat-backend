@@ -6,12 +6,17 @@ socket.on("connect", () => {
   console.log("웹소켓 연결");
 });
 
-console.log("뭐가 Null", document.getElementById("randomButton"));
+// console.log("뭐가 Null", document.getElementById("randomButton"));
+
+//
+document.getElementById("keyboard").addEventListener("keydown", () => {
+  console.log("실행중?");
+  socket.emit("typing");
+});
 document.getElementById("randomButton").addEventListener("click", () => {
+  console.log("힘들다");
   socket.emit("random-match");
 });
-//
-
 socket.on("status-queue", (data) => {
   console.log("status", data);
 });
@@ -43,11 +48,21 @@ socket.on("match-fail", () => {
 
 //----------------------- 대화방
 
-socket.emit("message", message);
-socket.on("message", (message, time) => {
-  console.log("message", message);
-  console.log("time", time);
-});
+// --- 포스트맨으로 테스트 한 부분
+// socket.emit("message", message);
+// socket.on("message", (message, time) => {
+//   console.log("message", message);
+//   console.log("time", time);
+// });
 
 socket.emit("leaving-room");
 socket.on("user-exit-chat");
+
+// --- 포스트맨 테스트 여기까지
+
+socket.on("typing", () => {});
+// 이건 직접 해봐야할 것 같은데
+/**
+ * 포스트맨으로 어떻게 ?
+ *
+ */

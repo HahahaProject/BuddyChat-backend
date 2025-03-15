@@ -21,7 +21,12 @@ export const RandomMatch = async () => {
       <button id="stopMatchButton">매칭취소</button>
       `);
 };
-export const ChatRoom = async () => {};
+export const ChatRoom = async () => {
+  return createElement(`
+    <input id="keyboard" autocomplete="off" />
+    <p id="status"></p>
+    `);
+};
 export const GroupChat = async () => {};
 
 export const NotFound = () => {

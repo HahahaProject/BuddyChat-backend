@@ -36,13 +36,22 @@ io.on("connection", (socket) => {
    *    -
    *
    */
-  socket.on("random-match", async () => {
+  socket.on("random-match", async (callback) => {
     //대기열 큐에 넣는다.
     console.log("random-match 실행중");
     let user = queueIn(socket.id);
     socket.emit("status-queue", { status: 201, message: "queueIn" });
+    // status-queue 대신 callback으로도 가능
+
     let waitingResult;
     console.log("user값", user);
+
+    // 대화방내에서 다시찾기인경우
+    // if (socketRoomId[1]) {
+    //   socket.leave(socketRoomId[1]);
+    // }
+    // callback({status: 200, message: "test"})
+
     if (!user) {
       try {
         socket.emit("matchingtime-start");
@@ -84,33 +93,38 @@ io.on("connection", (socket) => {
   });
 
   //-------------   여기서 부터 대화방
-  socket.on("message", (message) => {
-    console.log("socketRoodId", socketRoomId);
-    console.log("message", message);
-    io.to(socketRoomId[1]).emit("message", message, messageTime);
-  });
+
+  // 포스트맨
+  // socket.on("message", (message) => {
+  //   console.log("socketRoodId", socketRoomId);
+  //   console.log("message", message);
+  //   io.to(socketRoomId[1]).emit("message", message, messageTime);
+  // });
 
   // io.emit("message");
 
   // 만약에 룸에 포함된 사람이 아무도 없으면 룸 삭제해야함.
   // 룸삭제 ?
   /**
-   * 대화방에서 다시찾기나 홈으로 돌아갈 시 남은 사람도 방을 leave해야헤
+   * * 대화방에서 다시찾기나 홈으로 돌아갈 시 남은 사람도 방을 leave해야헤
+   * * 근데 다시찾기를 새로 이벤틀르 파면 같은 로직을 두번쓰자니 중복되고
    *
    */
-  socket.on("leaving-room", () => {
-    chatEndTime = Date.now();
-    console.log("chatEndtime", chatEndTime);
-    console.log("chatStartTime", chatStartTime);
-    chatLapseTime = calLapseTime(chatEndTime, chatStartTime);
-    io.to(socketRoomId[1]).emit("user-exit-chat", time, chatLapseTime);
-    /**
-     * 채팅 종료시간이랑 채팅 한 시간 보내기.
-     * ㅊㅐ팅시간을 어덯게 측정하지
-     * Date.now()로 빼서 측정.
-     */
-    socket.leave(socketRoomId[1]);
-    console.log("socket.rooms여부", socket.rooms);
+  //포스트맨
+  // socket.on("leaving-room", () => {
+  //   chatEndTime = Date.now();
+  //   console.log("chatEndtime", chatEndTime);
+  //   console.log("chatStartTime", chatStartTime);
+  //   chatLapseTime = calLapseTime(chatEndTime, chatStartTime);
+  //   io.to(socketRoomId[1]).emit("user-exit-chat", time, chatLapseTime);
+  //
+  //   socket.leave(socketRoomId[1]);
+  //   console.log("socket.rooms여부", socket.rooms);
+  // });
+
+  socket.on("typing", () => {
+    console.log("지금 타이핑중");
+    socket.broadcast.to(socketRoomId[1]).emit("typing");
   });
 });
 
