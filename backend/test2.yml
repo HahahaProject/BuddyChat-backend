@@ -1,0 +1,17 @@
+config:
+  target: http://localhost:5000
+  phases:
+    - duration: 60
+      arrivalCount: 200
+      arrivalRate: 100
+  socketio:
+scenarios:
+  - name: "callback-and-emit"
+    engine: "socketio"
+    flow:
+      - emit:
+          channel: "test-callback"
+          data: "테스트데이터"
+        acknowledge:
+          match:
+            value: "OK"

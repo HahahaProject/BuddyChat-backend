@@ -1,0 +1,17 @@
+config:
+  target: http://localhost:5000
+  phases:
+    - duration: 20
+      arrivalCount: 200
+      arrivalRate: 100
+  engines:
+    socketio-v3: {}
+scenarios:
+  - name: "callback-and-emit"
+    engine: "socketio"
+    flow:
+      - emit:
+          channel: "test-emit"
+        response:
+          on: "status-queue"
+          args: "성공"

@@ -14,12 +14,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const io = new Server(server);
 let socketRoomId;
 let chatStartTime, chatEndTime, chatLapseTime;
+
 app.use(
   express.static("/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend")
 );
 app.get("/", (req, res) => {
   res.sendFile(
-    "/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend/index.html"
+    "/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend/test.html"
   );
 });
 
@@ -36,13 +37,37 @@ io.on("connection", (socket) => {
    *    -
    *
    */
-  socket.on("random-match", async (callback) => {
+
+  // socket.on("test-emit");
+  socket.on("test-emit", () => {
+    console.log("실행");
+    // socket.emit("status-queue", { message: "queueIn" }, () => {
+    //   console.log("오케?");
+    // });
+    socket.emit("status-queue", "성공");
+  });
+  // socket.emit("status-queue", () => {
+  //   console.log("밑에꺼 실행");
+  // });
+  // socket.emit("status-queue", { status: 204, message: "queueOut" }, () => {
+  //   console.log("status-queue실행");
+  // });
+  // socket.on("test-emit", () => {
+  //   socket.emit("status-queue", "데이터", (response) => {
+  //     console.log("response", response);
+  //   });
+  // });
+
+  socket.on("test-callback", (data, callback) => {
+    console.log("data", data);
+    callback("OK");
+  });
+  socket.on("match-start", async (callback) => {
     //대기열 큐에 넣는다.
     console.log("random-match 실행중");
     let user = queueIn(socket.id);
     socket.emit("status-queue", { status: 201, message: "queueIn" });
     // status-queue 대신 callback으로도 가능
-
     let waitingResult;
     console.log("user값", user);
 
