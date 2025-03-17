@@ -65,11 +65,8 @@
     <script src="/socket.io/socket.io.js"></script>
     <!-- 실제 path에 js파일을 만들필요가 없음. socket.io가 서버기동시에 socket.io.js 라이브러리를 자동으로 생성해줌. -->
     <script>
-      const socket = io({
-        auth: {
-          serverOffset: 0,
-        },
-      }); // socket.io에 접속하기 위해 io()메소드를 호출한다.
+      const socket = io("http://localhost:5000"); // socket.io에 접속하기 위해 io()메소드를 호출한다.
+
       // 위에 생성한 socket으로 서버로의 메시지 송신, 서버로부터 메시지 수신을 할 수 있다.
       const form = document.getElementById("form");
       const input = document.getElementById("input");
@@ -78,17 +75,24 @@
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         if (input.value) {
-          socket.emit("chat message", input.value);
+          socket.emit("message", input.value, (response) => {
+            console.log(response.status);
+            console.log(response.message);
+          });
           input.value = "";
         }
       });
-
-      socket.on("chat message", (msg, serverOffset) => {
+      socket.on("message", (msg, callback) => {
         const item = document.createElement("li");
-        item.textContent = msg;
+        item.textContent = `${msg.message}` + `${msg.time}`;
+
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
-        socket.auth.serverOffset = serverOffset;
+        console.log("콜백이 실행됨");
+        callback({
+          status: 200,
+          message: "서버로부터 잘 받았어용",
+        });
       });
       // socket
       //   .emit("request", { foo: "bar" }, "baz", (err, response) => {
@@ -101,7 +105,6 @@
       //     }
       //     console.log(socket.connected);
       //   });
-      console.log(socket.connected);
     </script>
   </body>
 </html>

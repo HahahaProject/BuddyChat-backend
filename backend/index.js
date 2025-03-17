@@ -20,7 +20,7 @@ app.use(
 );
 app.get("/", (req, res) => {
   res.sendFile(
-    "/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend/test.html"
+    "/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend/chatRoom.html"
   );
 });
 
@@ -38,35 +38,24 @@ io.on("connection", (socket) => {
    *
    */
 
-  // socket.on("test-emit");
-  socket.on("test-emit", () => {
-    console.log("실행");
-    // socket.emit("status-queue", { message: "queueIn" }, () => {
-    //   console.log("오케?");
-    // });
-    socket.emit("status-queue", "성공");
-  });
-  // socket.emit("status-queue", () => {
-  //   console.log("밑에꺼 실행");
-  // });
-  // socket.emit("status-queue", { status: 204, message: "queueOut" }, () => {
-  //   console.log("status-queue실행");
-  // });
-  // socket.on("test-emit", () => {
-  //   socket.emit("status-queue", "데이터", (response) => {
-  //     console.log("response", response);
-  //   });
-  // });
-
   socket.on("test-callback", (data, callback) => {
     console.log("data", data);
     callback("OK");
   });
+
+  socket.emit("match-result", {
+    status: 200,
+    message: "매치성공",
+  });
+
   socket.on("match-start", async (callback) => {
     //대기열 큐에 넣는다.
     console.log("random-match 실행중");
     let user = queueIn(socket.id);
-    socket.emit("status-queue", { status: 201, message: "queueIn" });
+    callback({
+      status: 200,
+      message: "대기열진입",
+    });
     // status-queue 대신 callback으로도 가능
     let waitingResult;
     console.log("user값", user);
@@ -79,7 +68,6 @@ io.on("connection", (socket) => {
 
     if (!user) {
       try {
-        socket.emit("matchingtime-start");
         waitingResult = await waiting20();
         console.log("promise waiting 결과", waitingResult);
       } catch (err) {
@@ -120,11 +108,38 @@ io.on("connection", (socket) => {
   //-------------   여기서 부터 대화방
 
   // 포스트맨
-  // socket.on("message", (message) => {
-  //   console.log("socketRoodId", socketRoomId);
-  //   console.log("message", message);
-  //   io.to(socketRoomId[1]).emit("message", message, messageTime);
-  // });
+  let messageOffset = 0;
+
+  socket.on("message", (message, callback) => {
+    let currentTime = new Date().getTime();
+    io.timeout(10000).emit(
+      "message",
+      {
+        messageOffset: messageOffset,
+        status: 200,
+        message: message,
+        sender: socket.id,
+        time: currentTime,
+      },
+      (err, responses) => {
+        if (err) {
+          console.log("에러발생", err);
+        } else {
+          const responseArray = Object.entries(responses).map(
+            ([socketId, data]) => ({
+              socketId,
+              ...data,
+            })
+          );
+          console.log("서버에서 emit결과", responseArray);
+        }
+      }
+    );
+    callback({
+      status: 200,
+      message: "서버에서 받았어요",
+    }); // 룸은 나중에
+  });
 
   // io.emit("message");
 

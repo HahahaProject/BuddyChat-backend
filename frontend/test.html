@@ -17,13 +17,10 @@
     socket.emit("test-emit");
     document.getElementById("randomButton").addEventListener("click", () => {
       console.log("랜덤 매칭 클릭됨");
-      socket.emit("test-emit");
-      // socket.emit("test-callback", "데이터", (response) => {
-      //   console.log("response", response);
-      // });
-    });
-    socket.on("status-queue", (data, callback) => {
-      callback("OK");
+      socket.emit("match-start-test", (response) => {
+        console.log("1", Date.now());
+        console.log(response);
+      });
     });
   </script>
 </html>
