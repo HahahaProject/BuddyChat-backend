@@ -58,8 +58,14 @@
   </head>
   <body>
     <ul id="messages"></ul>
+    <h4 id="typing"></h4>
     <form id="form" action="">
-      <input id="input" autocomplete="off" /><button>Send</button>
+      <input
+        id="input"
+        autocomplete="off"
+        oninput="inputChange()"
+        onchange="change()"
+      /><button>Send</button>
     </form>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -93,6 +99,52 @@
           status: 200,
           message: "서버로부터 잘 받았어용",
         });
+      });
+
+      let isEmpty = true;
+      let number = 0;
+      /**
+       * inputStatus가 맨 처음엔 false인데
+       * inputChange함수가 불려지면 true로 바뀐다.
+       * false에서 true로 바뀔때만 socket.emit(typing)이 된다.
+       * 그러다가 onchnage가 되거나 다시 input내용이 비어있으면 socket.emit(typint false)한다.
+       *
+       *  socket.emit(typing이 true가 된다. )
+       *  알고리즘이 너무 복잡한가..??
+       *
+       *
+       */
+      function change() {
+        isEmpty = true;
+        console.log("엔터침");
+        socket.emit("typing", {
+          isEmpty: isEmpty,
+        });
+      }
+      function inputChange() {
+        console.log("지금 이벤트실행중");
+        let inputWindow = document.getElementById("input");
+        if (isEmpty == true && input.value.length !== 0) {
+          // 처음 치기 시작했을때
+          console.log("여기 실행중");
+          socket.emit("typing", {
+            isEmpty: false,
+          });
+          isEmpty = false;
+        } else if (input.value.length == 0) {
+          isEmpty = true;
+        }
+      }
+      socket.on("typing", (inputState) => {
+        console.log("typing되고있음");
+        let typingStatus = document.getElementById("typing");
+        if (inputState.isEmpty == false) {
+          console.log("현재 false");
+          typingStatus.innerHTML = "사용자가 타이핑중입니다.";
+        } else {
+          console.log("현재 true");
+          typingStatus.innerHTML = "";
+        }
       });
       // socket
       //   .emit("request", { foo: "bar" }, "baz", (err, response) => {

@@ -141,6 +141,13 @@ io.on("connection", (socket) => {
     }); // 룸은 나중에
   });
 
+  socket.on("typing", (inputState) => {
+    io.emit("typing", {
+      // 현재 룸배제하고 io로 함.
+      //to(socketRoomId[1])
+      isEmpty: inputState.isEmpty,
+    });
+  });
   // io.emit("message");
 
   // 만약에 룸에 포함된 사람이 아무도 없으면 룸 삭제해야함.
@@ -161,11 +168,6 @@ io.on("connection", (socket) => {
   //   socket.leave(socketRoomId[1]);
   //   console.log("socket.rooms여부", socket.rooms);
   // });
-
-  socket.on("typing", () => {
-    console.log("지금 타이핑중");
-    socket.broadcast.to(socketRoomId[1]).emit("typing");
-  });
 });
 
 server.listen(5000, () => {
