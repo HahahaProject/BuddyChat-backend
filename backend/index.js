@@ -25,9 +25,10 @@ app.get("/", (req, res) => {
 });
 
 io.on("connection", (socket) => {
-  console.log("유저 연결됨");
+  console.log("개인소켓 연결됨.");
   console.log("server.socketId", socket.id);
   /**
+   *
    * 1. 랜덤매칭을 하면
    *    - 한번 매칭되었던 사람은 매칭이 되면 안되구 (중복체크)
    *    - 뭘 기준으로 매칭을 하지? 기준이 없음. 그냥 그 때 들어와있는 사람들중에서 고르면 되는것. (대기열)
@@ -35,18 +36,15 @@ io.on("connection", (socket) => {
    *    - 동시성 문제는 뭘말하는거지? 일단 엄청나게 많이 공부를 해야하는것같은데..
    *    - 그리고 먼저 온 사람이 먼저 매칭이 되어야 한다. ? => 가중치반영
    *    -
-   *
-   */
 
-  socket.on("test-callback", (data, callback) => {
-    console.log("data", data);
-    callback("OK");
-  });
+   */
 
   socket.emit("match-result", {
     status: 200,
     message: "매치성공",
   });
+  // 일단 랜덤과 그룹 모두 room으로 구현예정
+  //
 
   socket.on("match-start", async (callback) => {
     //대기열 큐에 넣는다.

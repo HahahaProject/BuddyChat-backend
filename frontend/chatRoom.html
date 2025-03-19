@@ -72,17 +72,19 @@
     </form>
 
     <script src="/socket.io/socket.io.js"></script>
-    <!-- 실제 path에 js파일을 만들필요가 없음. socket.io가 서버기동시에 socket.io.js 라이브러리를 자동으로 생성해줌. -->
     <script>
-      const socket = io("http://localhost:5000"); // socket.io에 접속하기 위해 io()메소드를 호출한다.
+      const socket = io();
 
-      // 위에 생성한 socket으로 서버로의 메시지 송신, 서버로부터 메시지 수신을 할 수 있다.
       const form = document.getElementById("form");
       const input = document.getElementById("input");
       const messages = document.getElementById("messages");
 
       document.getElementById("randomButton").addEventListener("click", () => {
         console.log("랜덤 매칭 클릭됨");
+        socket.emit("match-start", (response) => {
+          console.log(response.status);
+          console.log(response.message);
+        });
       });
 
       form.addEventListener("submit", (e) => {
