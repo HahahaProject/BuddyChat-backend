@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { v4 as uuidv4 } from "uuid";
-import { queueIn, waiting20 } from "./matching.js";
+import { queueIn, matching, waiting20 } from "./matching.js";
 import { matchCancel } from "./matching.js";
 import { currentDate, time, messageTime, calLapseTime } from "./time.js";
 import { queueEvent } from "./matching.js";
@@ -47,105 +47,147 @@ io.on("connection", (socket) => {
   //
 
   socket.on("match-start", async (callback) => {
-    //대기열 큐에 넣는다.
     console.log("random-match 실행중");
-    let user = queueIn(socket.id);
-    callback({
-      status: 200,
-      message: "대기열진입",
-    });
-    // status-queue 대신 callback으로도 가능
-    let waitingResult;
-    console.log("user값", user);
-
-    // 대화방내에서 다시찾기인경우
-    // if (socketRoomId[1]) {
-    //   socket.leave(socketRoomId[1]);
-    // }
-    // callback({status: 200, message: "test"})
-
-    if (!user) {
-      try {
-        waitingResult = await waiting20();
-        console.log("promise waiting 결과", waitingResult);
-      } catch (err) {
-        socket.emit("status-queue", { status: 408, message: "queueOut" });
-        socket.emit("match-fail", () => {
-          console.log("매칭실패 emit");
-        });
-      }
-
-      if (waitingResult) {
-        console.log("2", waitingResult[2]);
-        socket.join(`${waitingResult[2]}`);
-        chatStartTime = Date.now();
-        socket.emit("match-success", time);
-        socket.emit("status-queue", { status: 200, message: "queueOut" });
-        console.log("socketId와 room", socket.rooms);
-        socketRoomId = [...socket.rooms];
-      }
+    let currentTime = Date.now();
+    let socketInfo = {
+      socketId: socket.id,
+      enterTime: currentTime,
+    };
+    let result = queueIn(socketInfo);
+    if (result == false) {
+      //그냥 처음 누른것에대해서 20초 카운트되는걸로
+      callback({
+        status: 202,
+        message: "중복등록",
+      });
     } else {
-      console.log("두번째 user는 여기 실행");
-      queueEvent.emit("20sStop");
-      socket.join(`${user.roomName}`);
-      chatStartTime = Date.now();
-      socket.emit("match-success", time);
-      socket.emit("status-queue", { status: 200, message: "queueOut" });
-      console.log("socketId와 room", socket.rooms);
-      socketRoomId = [...socket.rooms];
+      callback({
+        status: 200,
+        message: "매칭등록",
+      });
+      // 20초 타임아웃시작
+      const timer = setTimeout(() => {
+        console.log("타임아웃끝");
+        socket.emit("match-result", {
+          status: 408,
+          message: "매칭시간 초과",
+        });
+      }, 10000);
+      const matchingResult = matching(socket.id);
+      console.log("myId", socket.id);
+      console.log("matchingResult", matchingResult);
+      if (matchingResult) {
+        // 결과가 있을 경우
+        // 한사람에게는 안가는 문제
+        // 근데 그게 어떻게 가능하지?
+        // 여기 마무리해야함.
+        console.log("여기 실행이 안되는겨?");
+        clearTimeout(timer);
+        socket.to(matching.partner, socket.id).emit("match-result", {
+          status: 200,
+          message: "매치 성공",
+          date: {
+            matchTime: "",
+          },
+        });
+        io.in(matching.partner, socket.id).socketsJoin(matching.room);
+      }
     }
   });
 
+  // 중복소켓 => 이미 큐에 있다.
+  // 그냥 이미 20초 카운트가 되고있는것.
+  //
+
+  // status-queue 대신 callback으로도 가능
+  // let waitingResult;
+  // console.log("user값", user);
+
+  // 대화방내에서 다시찾기인경우
+  // if (socketRoomId[1]) {
+  //   socket.leave(socketRoomId[1]);
+  // }
+  // callback({status: 200, message: "test"})
+
+  //   if (!user) {
+  //     try {
+  //       waitingResult = await waiting20();
+  //       console.log("promise waiting 결과", waitingResult);
+  //     } catch (err) {
+  //       socket.emit("status-queue", { status: 408, message: "queueOut" });
+  //     }
+
+  //     if (waitingResult) {
+  //       console.log("2", waitingResult[2]);
+  //       socket.join(`${waitingResult[2]}`);
+  //       chatStartTime = Date.now();
+  //       socket.emit("match-success", time);
+  //       socket.emit("status-queue", { status: 200, message: "queueOut" });
+  //       console.log("socketId와 room", socket.rooms);
+  //       socketRoomId = [...socket.rooms];
+  //     }
+  //   } else {
+  //     console.log("두번째 user는 여기 실행");
+  //     queueEvent.emit("20sStop");
+  //     socket.join(`${user.roomName}`);
+  //     chatStartTime = Date.now();
+  //     socket.emit("match-success", time);
+  //     socket.emit("status-queue", { status: 200, message: "queueOut" });
+  //     console.log("socketId와 room", socket.rooms);
+  //     socketRoomId = [...socket.rooms];
+  //   }
+  // });
+
   // 여기
 
-  socket.on("match-cancel", () => {
-    matchCancel(socket.id);
-    socket.emit("status-queue", { status: 204, message: "queueOut" });
-  });
+  // socket.on("match-cancel", () => {
+  //   matchCancel(socket.id);
+  //   socket.emit("status-queue", { status: 204, message: "queueOut" });
+  // });
 
   //-------------   여기서 부터 대화방
 
-  // 포스트맨
-  let messageOffset = 0;
+  // // 포스트맨
+  // let messageOffset = 0;
 
-  socket.on("message", (message, callback) => {
-    let currentTime = new Date().getTime();
-    io.timeout(10000).emit(
-      "message",
-      {
-        messageOffset: messageOffset,
-        status: 200,
-        message: message,
-        sender: socket.id,
-        time: currentTime,
-      },
-      (err, responses) => {
-        if (err) {
-          console.log("에러발생", err);
-        } else {
-          const responseArray = Object.entries(responses).map(
-            ([socketId, data]) => ({
-              socketId,
-              ...data,
-            })
-          );
-          console.log("서버에서 emit결과", responseArray);
-        }
-      }
-    );
-    callback({
-      status: 200,
-      message: "서버에서 받았어요",
-    }); // 룸은 나중에
-  });
+  // socket.on("message", (message, callback) => {
+  //   let currentTime = new Date().getTime();
+  //   io.timeout(10000).emit(
+  //     "message",
+  //     {
+  //       messageOffset: messageOffset,
+  //       status: 200,
+  //       message: message,
+  //       sender: socket.id,
+  //       time: currentTime,
+  //     },
+  //     (err, responses) => {
+  //       if (err) {
+  //         console.log("에러발생", err);
+  //       } else {
+  //         const responseArray = Object.entries(responses).map(
+  //           ([socketId, data]) => ({
+  //             socketId,
+  //             ...data,
+  //           })
+  //         );
+  //         console.log("서버에서 emit결과", responseArray);
+  //       }
+  //     }
+  //   );
+  //   callback({
+  //     status: 200,
+  //     message: "서버에서 받았어요",
+  //   }); // 룸은 나중에
+  // });
 
-  socket.on("typing", (inputState) => {
-    io.emit("typing", {
-      // 현재 룸배제하고 io로 함.
-      //to(socketRoomId[1])
-      isEmpty: inputState.isEmpty,
-    });
-  });
+  // socket.on("typing", (inputState) => {
+  //   io.emit("typing", {
+  //     // 현재 룸배제하고 io로 함.
+  //     //to(socketRoomId[1])
+  //     isEmpty: inputState.isEmpty,
+  //   });
+  // });
   // io.emit("message");
 
   // 만약에 룸에 포함된 사람이 아무도 없으면 룸 삭제해야함.
@@ -167,7 +209,6 @@ io.on("connection", (socket) => {
   //   console.log("socket.rooms여부", socket.rooms);
   // });
 });
-
 server.listen(5000, () => {
   console.log("5000포트에서 서버 실행중");
 });
