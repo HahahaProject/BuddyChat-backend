@@ -5,13 +5,26 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { queueIn, matching } from "./matching.js";
 import { matchCancel } from "./matching.js";
-import { currentDate, time, messageTime, calLapseTime } from "./time.js";
+import {
+  currentDate,
+  time,
+  midnight,
+  messageTime,
+  calLapseTime,
+} from "./time.js";
+import cron from "node-cron";
 
 const app = express();
 const server = http.createServer(app);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const io = new Server(server);
 let matchingResult;
+let roomList = new Set();
+/**
+ * roomListr가 필요한 경우:
+ * 1. 전체 자정알림 emit할때
+ * 이외에는 모르겟음.
+ */
 
 app.use(
   express.static("/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend")
@@ -53,12 +66,15 @@ io.on("connection", (socket) => {
         console.log("타임아웃끝");
         socket.emit("match-result", {
           status: 408,
-          message: "매칭시간 초과",
+          message: "매치 시간초과",
         });
       }, 10000);
 
       if (matchingResult) {
         console.log("매칭성공");
+        socket.randomRoom = matchingResult.randomRoom; // 이 줄이 필요할까
+        roomList.add(matchingResult.randomRoom);
+        socket.chatStartTime = Date.now();
         io.to(matchingResult.partner)
           .to(socket.id)
           .emit("match-result", {
@@ -72,12 +88,15 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("join-room", () => {
+  socket.on("room-inside", (callback) => {
     console.log("타임아웃 멈춤");
-    console.log("소켓 타이머", socket.timer);
     clearTimeout(socket.timer);
-    socket.join(`${matchingResult.room}`);
+    socket.join(`${matchingResult.randomRoom}`);
     console.log("현재속한 룸", socket.rooms);
+    callback({
+      status: 200,
+      message: "랜덤방 진입",
+    });
   });
 
   socket.on("match-cancel", (callback) => {
@@ -89,94 +108,82 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("room-outside", (callback) => {
+    //대화나누던 방을 나간다.
+    //한사람이 나가면 다른사람도 방을 나가게 한다.
+    socket.leave(socket.randomRoom);
+    socket.chatEndTime = Date.now();
+    socket.broadcast.to(socket.randomRoom).emit("chat-alert", {
+      status: 200,
+      message: "채팅방 종료",
+      data: {
+        roomOutTime: time,
+        chatTime: calLapseTime(socket.chatEndTime, socket.chatStartTime),
+      },
+    });
+    callback({
+      status: 204,
+      message: "나가기성공",
+    });
+  });
+
+  /**
+   * chat-alert가 필요한 상황:
+   * 1. 채팅종료되었을때
+   * 2. 그룹채팅방에서 나갈때
+   *  - 1.2는 같은 결과 보내줘도 됨.  200
+   * 3. 자정되었을때  206
+   */
+
   socket.on("disconnect", () => {
     matchCancel(socket.id);
   });
 
-  // status-queue 대신 callback으로도 가능
-  // let waitingResult;
-  // console.log("user값", user);
-
-  // 대화방내에서 다시찾기인경우
-  // if (socketRoomId[1]) {
-  //   socket.leave(socketRoomId[1]);
-  // }
-  // callback({status: 200, message: "test"})
-
-  //   if (!user) {
-  //     try {
-  //       waitingResult = await waiting20();
-  //       console.log("promise waiting 결과", waitingResult);
-  //     } catch (err) {
-  //       socket.emit("status-queue", { status: 408, message: "queueOut" });
-  //     }
-
-  //     if (waitingResult) {
-  //       console.log("2", waitingResult[2]);
-  //       socket.join(`${waitingResult[2]}`);
-  //       chatStartTime = Date.now();
-  //       socket.emit("match-success", time);
-  //       socket.emit("status-queue", { status: 200, message: "queueOut" });
-  //       console.log("socketId와 room", socket.rooms);
-  //       socketRoomId = [...socket.rooms];
-  //     }
-  //   } else {
-  //     console.log("두번째 user는 여기 실행");
-  //     queueEvent.emit("20sStop");
-  //     socket.join(`${user.roomName}`);
-  //     chatStartTime = Date.now();
-  //     socket.emit("match-success", time);
-  //     socket.emit("status-queue", { status: 200, message: "queueOut" });
-  //     console.log("socketId와 room", socket.rooms);
-  //     socketRoomId = [...socket.rooms];
-  //   }
-  // });
-
-  // 여기
-
   //-------------   여기서 부터 대화방
 
   // // 포스트맨
-  // let messageOffset = 0;
+  let messageOffset = 0;
 
-  // socket.on("message", (message, callback) => {
-  //   let currentTime = new Date().getTime();
-  //   io.timeout(10000).emit(
-  //     "message",
-  //     {
-  //       messageOffset: messageOffset,
-  //       status: 200,
-  //       message: message,
-  //       sender: socket.id,
-  //       time: currentTime,
-  //     },
-  //     (err, responses) => {
-  //       if (err) {
-  //         console.log("에러발생", err);
-  //       } else {
-  //         const responseArray = Object.entries(responses).map(
-  //           ([socketId, data]) => ({
-  //             socketId,
-  //             ...data,
-  //           })
-  //         );
-  //         console.log("서버에서 emit결과", responseArray);
-  //       }
-  //     }
-  //   );
-  //   callback({
-  //     status: 200,
-  //     message: "서버에서 받았어요",
-  //   }); // 룸은 나중에
-  // });
+  socket.on("message", (message, callback) => {
+    let currentTime = new Date().getTime();
+    io.timeout(10000).emit(
+      "message",
+      {
+        chatMessageIdx: messageOffset,
+        chatTime: currentTime,
+        sender: socket.id,
+        nickName: socket.nickname || null,
+        chatMessage: message,
+        status: 201,
+      },
+      (err, responses) => {
+        if (err) {
+          // 이게 뭐지?
+          console.log("에러발생", err);
+        } else {
+          const responseArray = Object.entries(responses).map(
+            ([socketId, data]) => ({
+              socketId,
+              ...data,
+            })
+          );
+          console.log("서버에서 emit결과", responseArray);
+        }
+      }
+    );
+    callback({
+      status: 200,
+      message: "서버에서 받았어요",
+    }); // 룸은 나중에
+  });
 
-  // socket.on("typing", (inputState) => {
-  //   io.emit("typing", {
-  //     // 현재 룸배제하고 io로 함.
-  //     //to(socketRoomId[1])
-  //     isEmpty: inputState.isEmpty,
-  //   });
-  // });
+  socket.on("typing", (inputState) => {
+    io.emit("typing", {
+      // 현재 룸배제하고 io로 함.
+      //to(socketRoomId[1])
+      isEmpty: inputState.isEmpty,
+    });
+  });
   // io.emit("message");
 
   // 만약에 룸에 포함된 사람이 아무도 없으면 룸 삭제해야함.
@@ -186,17 +193,18 @@ io.on("connection", (socket) => {
    * * 근데 다시찾기를 새로 이벤틀르 파면 같은 로직을 두번쓰자니 중복되고
    *
    */
-  //포스트맨
-  // socket.on("leaving-room", () => {
-  //   chatEndTime = Date.now();
-  //   console.log("chatEndtime", chatEndTime);
-  //   console.log("chatStartTime", chatStartTime);
-  //   chatLapseTime = calLapseTime(chatEndTime, chatStartTime);
-  //   io.to(socketRoomId[1]).emit("user-exit-chat", time, chatLapseTime);
-  //
-  //   socket.leave(socketRoomId[1]);
-  //   console.log("socket.rooms여부", socket.rooms);
-  // });
+});
+
+// 하나만 오게 하려면 어떻게 해야하지?
+cron.schedule("0 0 0 * * *", () => {
+  for (let elem of roomList) {
+    io.to(elem).emit("chat-alert", {
+      status: 206,
+      data: {
+        midnight: midnight,
+      },
+    });
+  }
 });
 server.listen(5000, () => {
   console.log("5000포트에서 서버 실행중");

@@ -4,6 +4,9 @@ export const time = `${currentDate.getFullYear()}-${
   currentDate.getMonth() + 1
 }-${currentDate.getDate()} ${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
 
+export const midnight = `${currentDate.getFullYear()}-${
+  currentDate.getMonth() + 1
+}-${currentDate.getDate()} 00:00:00`;
 export const messageTime = `
     ${currentDate.getHours()} : ${currentDate.getMinutes()}`;
 // 더 이쁘게 00:00 으로 오게 고치기

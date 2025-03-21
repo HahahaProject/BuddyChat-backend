@@ -26,10 +26,10 @@ export const matching = (socket) => {
   // socketid가 했었던 pairList를 반환받음.
   let pairList = [...socket.checkUserPair] || [];
   let currentQueueStatus = priorityQueue.peekAll();
-  let partner, index, roomName, me;
+  let partner, index, randomRoom, me;
   if (pairList.length == 0 && currentQueueStatus.length == 2) {
     // 매칭된적이 없고, 대기열속에 본인밖에 없는경우
-    console.log("본인밖에 없어요");
+    console.log("매칭된적 없고, 본인밖에 없어요");
     return;
   } else if (pairList.length == 0 && currentQueueStatus.length > 2) {
     // 매칭된적이 없고, 대기열속에 사람들이 있을때
@@ -41,86 +41,49 @@ export const matching = (socket) => {
         break;
       }
     }
-    roomName = uuidv4();
+    randomRoom = uuidv4();
     socket.myPosInQueue = undefined;
     return {
       partner: partner,
-      room: roomName,
+      randomRoom: randomRoom,
     };
+  } else if (currentQueueStatus.length == 2) {
+    console.log("매칭된적 있고 대기열에 나만 있어요");
+    return;
   } else {
-    console.log("pairList.size ", pairList.size);
-    console.log(" currentQueueStatus.length", currentQueueStatus.length);
-    console.log("이상하게 여기로 와요..");
-    // 여기 매칭취소하고 다시 구현
-    // 매칭된적이 있고, 대기열속에 사람들이 있을거나 본인밖에 없을때?
-    index = 1;
-    for (let elem of pairList) {
-      if (elem == priorityQueue.peek(i)) {
-        continue;
-      } else {
-        break;
-      }
-      index++;
-    }
+    console.log("매칭된적 있고, 대기열에 매치되었던 사람뿐이에요");
+    socket.checkUserPair;
+    console.log("매칭된적 있고, 대기열에 매치된적 없는 새로운사람이 있어요 ");
   }
-
-  /**
-   * 한번도 매칭되지 않았던 사람이랑 매칭한다.
-   * ->매칭기록은 checkUserPair에 저장되어있다.
-   * ->checkUserPair에 저장된 사람들을 제외한다.
-   *    그러려면 우선 저장된 사람들을 안다.
-   *    저장된 사람들이 어느 인덱스인지 안다.
-   *    그 인덱스를 제외하고 가장 최소값인덱스를 peek한다.
-   * -> 매칭성공하면 checkUserPair에 등록한다.
-   */
-  // 한번도 매칭되지 않았던 사람이랑 매칭함.
-  // 매칭기록을 남김.
 };
+// console.log("pairList.size ", pairList.size);
+// console.log(" currentQueueStatus.length", currentQueueStatus.length);
 
+// 여기 매칭취소하고 다시 구현
+// 매칭된적이 있고, 대기열속에 사람들이 있을거나 본인밖에 없을때?
+// index = 1;
+// for (let elem of pairList) {
+//   if (elem == priorityQueue.peek(i)) {
+//     continue;
+//   } else {
+//     break;
+//   }
+//   index++;
 // }
-// 이걸 어떻게 하지???
+
 /**
- * 총 세가지 경우가 잇음.
- * 1. queue에 1명밖에 없어서 그냥 아무값없이 return 하는 경우
- * 2. queue에 애초부터 2명이상이어서 그냥 queue.shift해도 아무 상관없는경우
- * 3. queue에 2명이라서 shitf되면 0인경우
+ * 한번도 매칭되지 않았던 사람이랑 매칭한다.
+ * ->매칭기록은 checkUserPair에 저장되어있다.
+ * ->checkUserPair에 저장된 사람들을 제외한다.
+ *    그러려면 우선 저장된 사람들을 안다.
+ *    저장된 사람들이 어느 인덱스인지 안다.
+ *    그 인덱스를 제외하고 가장 최소값인덱스를 peek한다.
+ * -> 매칭성공하면 checkUserPair에 등록한다.
  */
-//이거를 트랜잭션으로 해야할것같음.중간에 방해받으면 안되니까
 
 export const matchCancel = (socket) => {
   console.log("삭제될 소켓 pos", socket.myPosInQueue);
   if (socket.myPosInQueue) {
     priorityQueue.removeAt(socket.myPosInQueue);
   }
-};
-
-// 아
-// 어 문제 발생 이 경우에는 어떻게 해야하지?
-/**
- * 매칭취소를 하거나 소킷이 끊기면 큐에서 나가야함.
- * 왜 랜덤매칭버튼을 누른적이 없는데 왜 왜 Myposinqueue가 존재하지?
- */
-
-export const waiting20 = () => {
-  return new Promise((resolve, reject) => {
-    queueEvent.on("20sStop", () => {
-      clearTimeout(timerIdentifier);
-      console.log("clearTimeout실행");
-    });
-    timerIdentifier = setTimeout(() => {
-      console.log("clearTimeout이 실행되고 있지 않음. ");
-      queue.shift();
-      reject();
-    }, 20000);
-
-    //큐에 사람이 들어오면
-    queueEvent.on("queueIn", () => {
-      console.log("queueIn이벤트 on");
-      user1 = queue.shift();
-      user2 = queue.shift();
-      roomName = uuidv4();
-
-      resolve([user1, user2, roomName]);
-    });
-  });
 };
