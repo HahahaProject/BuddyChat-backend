@@ -96,6 +96,16 @@
         }
       });
 
+      document
+        .getElementById("stopMatchButton")
+        .addEventListener("click", () => {
+          console.log("매칭취소버튼 클릭됨");
+          socket.emit("match-cancel", (response) => {
+            console.log(response.status);
+            console.log(response.message);
+          });
+        });
+
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         if (input.value) {

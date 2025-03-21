@@ -3,11 +3,10 @@ import http from "node:http";
 import { Server } from "socket.io";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { v4 as uuidv4 } from "uuid";
-import { queueIn, matching, waiting20 } from "./matching.js";
+import { queueIn, matching } from "./matching.js";
 import { matchCancel } from "./matching.js";
 import { currentDate, time, messageTime, calLapseTime } from "./time.js";
-import { queueEvent } from "./matching.js";
+
 const app = express();
 const server = http.createServer(app);
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -27,18 +26,16 @@ io.on("connection", (socket) => {
   console.log("개인소켓 연결됨.");
   console.log("server.socketId", socket.id);
 
-  socket.on("match-start", async (callback) => {
+  socket.on("match-start", (callback) => {
     console.log("random-match 실행중");
-    // 시간순으로 우선순위를 두기위한 변수
-    let currentTime = Date.now();
+    socket.enterTime = Date.now();
+    if (!socket.checkUsersPair) {
+      socket.checkUserPair = new Set();
+    }
 
-    let socketInfo = {
-      socketId: socket.id,
-      enterTime: currentTime,
-    };
-    let result = queueIn(socketInfo);
+    let returnSocket = queueIn(socket);
 
-    if (result == false) {
+    if (returnSocket == false) {
       //그냥 처음 누른것에대해서 20초 카운트되는걸로
       callback({
         status: 202,
@@ -49,8 +46,9 @@ io.on("connection", (socket) => {
         status: 200,
         message: "매칭등록",
       });
-
-      matchingResult = matching(socket.id);
+      socket = returnSocket;
+      matchingResult = matching(socket);
+      console.log("매칭결과에요", matchingResult);
       socket.timer = setTimeout(() => {
         console.log("타임아웃끝");
         socket.emit("match-result", {
@@ -60,7 +58,8 @@ io.on("connection", (socket) => {
       }, 10000);
 
       if (matchingResult) {
-        io.to(matchingResult.partner.socketId)
+        console.log("매칭성공");
+        io.to(matchingResult.partner)
           .to(socket.id)
           .emit("match-result", {
             status: 200,
@@ -69,14 +68,29 @@ io.on("connection", (socket) => {
               matchTime: time,
             },
           });
-        console.log(socket.rooms);
       }
     }
   });
 
   socket.on("join-room", () => {
+    console.log("타임아웃 멈춤");
+    console.log("소켓 타이머", socket.timer);
     clearTimeout(socket.timer);
     socket.join(`${matchingResult.room}`);
+    console.log("현재속한 룸", socket.rooms);
+  });
+
+  socket.on("match-cancel", (callback) => {
+    matchCancel(socket);
+    clearTimeout(socket.timer);
+    callback({
+      status: 204,
+      message: "매치취소",
+    });
+  });
+
+  socket.on("disconnect", () => {
+    matchCancel(socket.id);
   });
 
   // status-queue 대신 callback으로도 가능
@@ -119,11 +133,6 @@ io.on("connection", (socket) => {
   // });
 
   // 여기
-
-  // socket.on("match-cancel", () => {
-  //   matchCancel(socket.id);
-  //   socket.emit("status-queue", { status: 204, message: "queueOut" });
-  // });
 
   //-------------   여기서 부터 대화방
 

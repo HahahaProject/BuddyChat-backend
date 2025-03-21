@@ -38,7 +38,6 @@ export class PriorityQueue {
   // 노드삭제
   removeAt(pos) {
     const heap = this.#heap;
-    console.log("지금 힙상태", heap);
     let size = this.#size;
     console.log("pos", pos);
     console.log("size", size);
@@ -50,7 +49,7 @@ export class PriorityQueue {
     }
     heap.splice(pos, 1);
     size = --this.#size;
-
+    console.log("지금 힙상태", heap);
     if (size > 0 && pos <= size) {
       if (
         pos > 1 &&
