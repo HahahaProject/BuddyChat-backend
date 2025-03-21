@@ -12,8 +12,7 @@ const app = express();
 const server = http.createServer(app);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const io = new Server(server);
-let socketRoomId;
-let chatStartTime, chatEndTime, chatLapseTime;
+let matchingResult;
 
 app.use(
   express.static("/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend")
@@ -27,33 +26,18 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
   console.log("개인소켓 연결됨.");
   console.log("server.socketId", socket.id);
-  /**
-   *
-   * 1. 랜덤매칭을 하면
-   *    - 한번 매칭되었던 사람은 매칭이 되면 안되구 (중복체크)
-   *    - 뭘 기준으로 매칭을 하지? 기준이 없음. 그냥 그 때 들어와있는 사람들중에서 고르면 되는것. (대기열)
-   *    - 대기열은 무슨 자료구조를 써야하지?
-   *    - 동시성 문제는 뭘말하는거지? 일단 엄청나게 많이 공부를 해야하는것같은데..
-   *    - 그리고 먼저 온 사람이 먼저 매칭이 되어야 한다. ? => 가중치반영
-   *    -
-
-   */
-
-  socket.emit("match-result", {
-    status: 200,
-    message: "매치성공",
-  });
-  // 일단 랜덤과 그룹 모두 room으로 구현예정
-  //
 
   socket.on("match-start", async (callback) => {
     console.log("random-match 실행중");
+    // 시간순으로 우선순위를 두기위한 변수
     let currentTime = Date.now();
+
     let socketInfo = {
       socketId: socket.id,
       enterTime: currentTime,
     };
     let result = queueIn(socketInfo);
+
     if (result == false) {
       //그냥 처음 누른것에대해서 20초 카운트되는걸로
       callback({
@@ -65,39 +49,35 @@ io.on("connection", (socket) => {
         status: 200,
         message: "매칭등록",
       });
-      // 20초 타임아웃시작
-      const timer = setTimeout(() => {
+
+      matchingResult = matching(socket.id);
+      socket.timer = setTimeout(() => {
         console.log("타임아웃끝");
         socket.emit("match-result", {
           status: 408,
           message: "매칭시간 초과",
         });
       }, 10000);
-      const matchingResult = matching(socket.id);
-      console.log("myId", socket.id);
-      console.log("matchingResult", matchingResult);
+
       if (matchingResult) {
-        // 결과가 있을 경우
-        // 한사람에게는 안가는 문제
-        // 근데 그게 어떻게 가능하지?
-        // 여기 마무리해야함.
-        console.log("여기 실행이 안되는겨?");
-        clearTimeout(timer);
-        socket.to(matching.partner, socket.id).emit("match-result", {
-          status: 200,
-          message: "매치 성공",
-          date: {
-            matchTime: "",
-          },
-        });
-        io.in(matching.partner, socket.id).socketsJoin(matching.room);
+        io.to(matchingResult.partner.socketId)
+          .to(socket.id)
+          .emit("match-result", {
+            status: 200,
+            message: "매치 성공",
+            date: {
+              matchTime: time,
+            },
+          });
+        console.log(socket.rooms);
       }
     }
   });
 
-  // 중복소켓 => 이미 큐에 있다.
-  // 그냥 이미 20초 카운트가 되고있는것.
-  //
+  socket.on("join-room", () => {
+    clearTimeout(socket.timer);
+    socket.join(`${matchingResult.room}`);
+  });
 
   // status-queue 대신 callback으로도 가능
   // let waitingResult;

@@ -87,6 +87,15 @@
         });
       });
 
+      socket.on("match-result", (arg) => {
+        if (arg.status == 200) {
+          console.log("arg", arg);
+          socket.emit("join-room");
+        } else {
+          console.log("이상해", arg);
+        }
+      });
+
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         if (input.value) {
