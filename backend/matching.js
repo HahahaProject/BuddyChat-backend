@@ -44,6 +44,7 @@ export const matching = (socket) => {
     randomRoom = uuidv4();
     socket.myPosInQueue = undefined;
     return {
+      me: me,
       partner: partner,
       randomRoom: randomRoom,
     };

@@ -92,8 +92,7 @@
         if (arg.status == 200) {
           console.log("arg", arg);
           socket.emit("room-inside", (response) => {
-            console.log(response.status);
-            console.log(response.message);
+            console.log(response.status, response.message);
           });
         } else {
           console.log("이상해", arg);
@@ -118,7 +117,18 @@
         });
       });
 
-      socket.on("chat-alert", (arg) => {
+      document.getElementById("searcgAgain").addEventListener("click", () => {
+        console.log("다시찾기 버튼");
+        socket.emit("match-start", (response) => {
+          console.log(response.status);
+          console.log(response.message);
+        });
+      });
+      socket.on("chat-alert", (arg, callback) => {
+        if (arg.status == 200) {
+          // 종료알림일경우
+          socket.emit("chat-alert");
+        }
         // 종료알림
         // 자정알림을 따로 나누는게 좋을듯.
         console.log("arg", arg);
@@ -128,22 +138,21 @@
         e.preventDefault();
         if (input.value) {
           socket.emit("message", input.value, (response) => {
-            console.log(response.status);
-            console.log(response.message);
+            console.log("결과", response.status, response.message);
           });
           input.value = "";
         }
       });
+
       socket.on("message", (msg, callback) => {
         const item = document.createElement("li");
-        item.textContent = `${msg.message}` + `${msg.time}`;
+        item.textContent = `${msg.chatMessage}` + `${msg.chatTime}`;
 
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
-        console.log("콜백이 실행됨");
         callback({
-          status: 200,
-          message: "서버로부터 잘 받았어용",
+          status: 201,
+          message: "수신",
         });
       });
 
@@ -168,11 +177,9 @@
         });
       }
       function inputChange() {
-        console.log("지금 이벤트실행중");
         let inputWindow = document.getElementById("input");
         if (isEmpty == true && input.value.length !== 0) {
           // 처음 치기 시작했을때
-          console.log("여기 실행중");
           socket.emit("typing", {
             isEmpty: false,
           });
@@ -182,7 +189,6 @@
         }
       }
       socket.on("typing", (inputState) => {
-        console.log("typing되고있음");
         let typingStatus = document.getElementById("typing");
         if (inputState.isEmpty == false) {
           console.log("현재 false");
