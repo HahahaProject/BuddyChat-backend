@@ -146,7 +146,8 @@
 
       socket.on("message", (msg, callback) => {
         const item = document.createElement("li");
-        item.textContent = `${msg.chatMessage}` + `${msg.chatTime}`;
+        item.textContent =
+          `${msg.chatMessageIdx} ` + `${msg.chatMessage}` + `${msg.chatTime}`;
 
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
@@ -198,17 +199,6 @@
           typingStatus.innerHTML = "";
         }
       });
-      // socket
-      //   .emit("request", { foo: "bar" }, "baz", (err, response) => {
-      //     if (err) {
-      //       console.log("에러?", err);
-      //     } else {
-      //       console.log("에러아님");
-      //       console.log(response.status);
-      //       console.log("response", response);
-      //     }
-      //     console.log(socket.connected);
-      //   });
     </script>
   </body>
 </html>

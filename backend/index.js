@@ -14,12 +14,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const io = new Server(server);
 let matchingResult;
 let roomList = new Map();
+let roomLatestMessageIdx = new Map();
 let count = 1;
-/**
- * roomListr가 필요한 경우:
- * 1. 전체 자정알림 emit할때
- * 이외에는 모르겟음.
- */
 
 app.use(
   express.static("/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend")
@@ -89,10 +85,13 @@ io.on("connection", (socket) => {
     for (let elem of roomList) {
       if (elem[1].me == socket.id) {
         socket.join(elem[1].randomRoom);
+        socket.roomIdx = elem[1].randomRoom;
       } else if (elem[1].partner == socket.id) {
         socket.join(elem[1].randomRoom);
+        socket.roomIdx = elem[1].randomRoom;
       }
     }
+    roomLatestMessageIdx.set(socket.roomIdx, 0);
     callback({
       status: 200,
       message: "랜덤방 진입",
@@ -110,6 +109,7 @@ io.on("connection", (socket) => {
 
   socket.on("room-outside", (callback) => {
     const room = [...socket.rooms];
+    console.log("단절된 socket의 room 목록", room);
     socket.chatEndTime = Date.now();
     const currentTime = new Date();
     io.timeout(10000)
@@ -144,6 +144,7 @@ io.on("connection", (socket) => {
       for (let elem of roomList) {
         if (elem[1].randomRoom == currentRoomStatus[1]) {
           roomList.delete(elem[0]);
+          roomLatestMessageIdx.delete(elem[0]);
           count--;
         }
       }
@@ -152,15 +153,29 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    matchCancel(socket.id);
+    // 여기 이상한데
+    console.log("여기 실행됐어요");
   });
 
+  // for (let elem of roomList) {
+  //   if (elem[1].me == socket.id) {
+  //     roomList.delete(elem[0]);
+  //     roomLatestMessageIdx.delete(elem[0]);
+  //     count--;
+  //   } else if (elem[1].partner == socket.id) {
+  //     roomList.delete(elem[0]);
+  //     roomLatestMessageIdx.delete(elem[0]);
+  //     count--;
+  //   }
+  // }
+  // 여기도.. 해야되는데 아
+
   //-------------   여기서 부터 대화방
-  let messageIdx = 0;
-  // messageIdx 해야함.
   socket.on("message", (message, callback) => {
     const currentTime = new Date();
     const room = [...socket.rooms];
+    let messageIdx = roomLatestMessageIdx.get(socket.roomIdx);
+    roomLatestMessageIdx.set(socket.roomIdx, ++messageIdx);
     io.timeout(10000)
       .to(room[1])
       .emit(
