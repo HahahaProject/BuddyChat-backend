@@ -94,12 +94,16 @@ io.on("connection", (socket) => {
           socket.chatStartTime = Date.now();
           partnerSocket.chatStartTime = Date.now();
 
-          console.log("io.adaptert", io.sockets.adapter.rooms);
+          // console.log("io.adaptert", io.sockets.adapter.rooms);
           io.to(matchingResult.randomRoom).emit("match-result", {
             status: 200,
             message: "매치 성공",
             date: {
-              matchTime: time(currentTime),
+              type: "join",
+              joinTime: time(currentTime),
+              nickName: socket.nickName || null,
+              roomName: null,
+              socket: socket.id,
             },
           });
         }
@@ -116,7 +120,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("room-outside", (callback) => {
-    console.log("이게 호출?");
     const room = [...socket.rooms];
     const roomListIdx = socket.roomListIdx;
     const roomInfo = roomList.get(roomListIdx);
@@ -152,8 +155,11 @@ io.on("connection", (socket) => {
           status: 200,
           message: "채팅방 종료",
           data: {
+            type: "out",
             roomOutTime: time(currentTime),
             chatTime: calLapseTime(socket.chatEndTime, socket.chatStartTime),
+            nickName: socket.nickName || null,
+            socket: socket.id,
           },
         },
         (err, response) => {
@@ -194,6 +200,8 @@ io.on("connection", (socket) => {
               chatEndTime,
               roomList.get(socket.roomListIdx).chatStartTime
             ),
+            nickName: socket.nickName || null,
+            socket: socket.id,
           },
         });
 
