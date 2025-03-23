@@ -138,7 +138,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("chat-alert", (arg) => {
-    console.log("현재상태", socket.rooms);
     const currentRoomStatus = [...socket.rooms];
     if (currentRoomStatus[1]) {
       for (let elem of roomList) {
@@ -149,24 +148,33 @@ io.on("connection", (socket) => {
         }
       }
       socket.leave(currentRoomStatus[1]);
+      console.log("현재상태", socket.rooms);
     }
   });
 
   socket.on("disconnect", () => {
     // 여기 이상한데
-    console.log("여기 실행됐어요");
+    console.log("소켓 룸 목록", socket.rooms);
+    let chatEndTime = Date.now();
+    const currentTime = new Date();
+    for (let elem of roomList) {
+      if (elem[1].me == socket.id || elem[1].partner == socket.id) {
+        socket.broadcast.to(elem[1].randomRoom).emit("chat-alert", {
+          status: 200,
+          message: "채팅방 종료",
+          data: {
+            roomOutTime: time(currentTime),
+            chatTime: calLapseTime(chatEndTime, elem[1].chatStartTime),
+          },
+        });
+        roomList.delete(elem[0]);
+        roomLatestMessageIdx.delete(elem[0]);
+        count--;
+      }
+    }
   });
 
-  // for (let elem of roomList) {
-  //   if (elem[1].me == socket.id) {
-  //     roomList.delete(elem[0]);
-  //     roomLatestMessageIdx.delete(elem[0]);
-  //     count--;
-  //   } else if (elem[1].partner == socket.id) {
-  //     roomList.delete(elem[0]);
-  //     roomLatestMessageIdx.delete(elem[0]);
-  //     count--;
-  //   }
+  //
   // }
   // 여기도.. 해야되는데 아
 

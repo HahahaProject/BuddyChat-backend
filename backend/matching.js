@@ -26,7 +26,7 @@ export const matching = (socket) => {
   // socketid가 했었던 pairList를 반환받음.
   let pairList = [...socket.checkUserPair] || [];
   let currentQueueStatus = priorityQueue.peekAll();
-  let partner, index, randomRoom, me;
+  let partner, index, randomRoom, me, chatStartTime;
   if (pairList.length == 0 && currentQueueStatus.length == 2) {
     // 매칭된적이 없고, 대기열속에 본인밖에 없는경우
     console.log("매칭된적 없고, 본인밖에 없어요");
@@ -41,12 +41,14 @@ export const matching = (socket) => {
         break;
       }
     }
+    chatStartTime = Date.now();
     randomRoom = uuidv4();
     socket.myPosInQueue = undefined;
     return {
       me: me,
       partner: partner,
       randomRoom: randomRoom,
+      chatStartTime: chatStartTime,
     };
   } else if (currentQueueStatus.length == 2) {
     console.log("매칭된적 있고 대기열에 나만 있어요");
