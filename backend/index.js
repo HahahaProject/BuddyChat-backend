@@ -15,7 +15,7 @@ const io = new Server(server);
 let matchingResult;
 let roomList = new Map();
 let roomLatestMessageIdx = new Map();
-let count = 1;
+let count = 1; // roomList용 카운트
 
 app.use(
   express.static("/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend")
@@ -29,16 +29,13 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
   console.log("개인소켓 연결됨.");
   console.log("server.socketId", socket.id);
-
   socket.on("match-start", (callback) => {
     console.log("random-match 실행중");
     socket.enterTime = Date.now();
     if (!socket.checkUsersPair) {
       socket.checkUserPair = new Set();
     }
-    console.log("socket.mypos", socket.myPosInQueue);
     let returnSocket = queueIn(socket);
-    console.log("2socket.mypost", socket.myPosInQueue);
     if (socket.myPosInQueue)
       if (returnSocket == false) {
         //그냥 처음 누른것에대해서 20초 카운트되는걸로
@@ -64,40 +61,49 @@ io.on("connection", (socket) => {
 
         if (matchingResult) {
           console.log("매칭성공");
-          roomList.set(count++, matchingResult);
+          roomList.set(count, matchingResult);
+
           const currentTime = new Date();
-          io.to(matchingResult.partner.id)
-            .to(socket.id)
-            .emit("match-result", {
-              status: 200,
-              message: "매치 성공",
-              date: {
-                matchTime: time(currentTime),
-              },
-            });
+          const partnerSocket = io.sockets.sockets.get(
+            matchingResult.partner.id
+          );
+
+          // roomList Idx 추가
+          socket.roomListIdx = count;
+          partnerSocket.roomListIdx = count;
+          count++;
+
+          // 타입아웃 멈춤
+          clearTimeout(socket.timer);
+          clearTimeout(partnerSocket.timer);
+
+          // 룸에 조인
+          socket.join(matchingResult.randomRoom);
+          partnerSocket.join(matchingResult.randomRoom);
+          socket.roomId = matchingResult.randomRoom;
+          partnerSocket.roomId = matchingResult.randomRoom;
+
+          // messageIdx값 저장
+          roomLatestMessageIdx.set(socket.roomId, 0);
+
+          // queue내에서의 정보 초기화
+          socket.myPosInQueue = undefined;
+          partnerSocket.myPosInQueue = undefined;
+
+          // 채팅시작시간 저장
+          socket.chatStartTime = Date.now();
+          partnerSocket.chatStartTime = Date.now();
+
+          console.log("io.adaptert", io.sockets.adapter.rooms);
+          io.to(matchingResult.randomRoom).emit("match-result", {
+            status: 200,
+            message: "매치 성공",
+            date: {
+              matchTime: time(currentTime),
+            },
+          });
         }
       }
-  });
-
-  socket.on("room-inside", (callback) => {
-    console.log("타임아웃 멈춤");
-    clearTimeout(socket.timer);
-    for (let elem of roomList) {
-      if (elem[1].me.id == socket.id) {
-        socket.join(elem[1].randomRoom);
-        socket.roomIdx = elem[1].randomRoom;
-      } else if (elem[1].partner.id == socket.id) {
-        socket.join(elem[1].randomRoom);
-        socket.roomIdx = elem[1].randomRoom;
-      }
-    }
-    roomLatestMessageIdx.set(socket.roomIdx, 0);
-    socket.myPosInQueue = undefined;
-    socket.chatStartTime = Date.now();
-    callback({
-      status: 200,
-      message: "랜덤방 진입",
-    });
   });
 
   socket.on("match-cancel", (callback) => {
@@ -110,14 +116,38 @@ io.on("connection", (socket) => {
   });
 
   socket.on("room-outside", (callback) => {
+    console.log("이게 호출?");
     const room = [...socket.rooms];
+    const roomListIdx = socket.roomListIdx;
+    const roomInfo = roomList.get(roomListIdx);
+    let partnerSocket;
+    if (roomInfo.me.id == socket.id) {
+      partnerSocket = io.sockets.sockets.get(roomInfo.partner.id);
+    } else if (roomInfo.partner.id == socket.id) {
+      partnerSocket = io.sockets.sockets.get(roomInfo.me.id);
+    }
 
     socket.chatEndTime = Date.now();
+    partnerSocket.chatEndTime = Date.now();
+
+    // 룸리스트에서 제거
+    roomList.delete(roomListIdx);
+    count--;
+    console.log("roomList", roomList);
+
+    // 중복누름 확인용 set에서 제거
+    checkUsers.delete(socket.id);
+    checkUsers.delete(partnerSocket.id);
+
+    // room별 messageIdx 지움
+    roomLatestMessageIdx.delete(socket.roomId);
+
     const currentTime = new Date();
+    console.log("실행중");
     io.timeout(10000)
       .to(room[1])
       .emit(
-        "chat-alert",
+        "room-alert",
         {
           status: 200,
           message: "채팅방 종료",
@@ -132,59 +162,62 @@ io.on("connection", (socket) => {
           }
         }
       );
+
+    //룸에서 나감.
     socket.leave(room[1]);
-    checkUsers.delete(socket.id);
+    partnerSocket.leave(room[1]);
+
+    //roomId 제거
+    socket.roomId = undefined;
+    partnerSocket.roomId = undefined;
+    socket.roomListIdx = undefined;
+    partnerSocket.roomListIdx = undefined;
+
     callback({
       status: 204,
       message: "나가기성공",
     });
   });
 
-  socket.on("chat-alert", (arg) => {
-    const currentRoomStatus = [...socket.rooms];
-    if (currentRoomStatus[1]) {
-      for (let elem of roomList) {
-        if (elem[1].randomRoom == currentRoomStatus[1]) {
-          roomList.delete(elem[0]);
-          roomLatestMessageIdx.delete(elem[0]);
-          count--;
-          checkUsers.delete(socket.id);
-          console.log("checkUsers", checkUsers);
-        }
-      }
-      socket.leave(currentRoomStatus[1]);
-    }
-  });
-
-  socket.on("disconnect", () => {
-    // 여기 이상한데
-    let chatEndTime = Date.now();
-    const currentTime = new Date();
-    for (let elem of roomList) {
-      if (elem[1].me.id == socket.id || elem[1].partner.id == socket.id) {
-        socket.broadcast.to(elem[1].randomRoom).emit("chat-alert", {
+  socket.on(
+    "disconnect",
+    () => {
+      let chatEndTime = Date.now();
+      const currentTime = new Date();
+      if (socket.roomListIdx) {
+        socket.broadcast.to(socket.roomId).emit("room-alert", {
           status: 200,
           message: "채팅방 종료",
           data: {
             roomOutTime: time(currentTime),
-            chatTime: calLapseTime(chatEndTime, elem[1].chatStartTime),
+            chatTime: calLapseTime(
+              chatEndTime,
+              roomList.get(socket.roomListIdx).chatStartTime
+            ),
           },
         });
-        roomList.delete(elem[0]);
-        roomLatestMessageIdx.delete(elem[0]);
+
+        // 룸리스트에서 삭제
+        roomList.delete(socket.roomListIdx);
         count--;
+        // 최신 messageIdx 삭제
+        roomLatestMessageIdx.delete(socket.roomId);
+        // 중복누름 확인용 set에서 제거
         checkUsers.delete(socket.id);
-        console.log("checkUsers", checkUsers);
+        // 소켓룸아이디 제거
+        socket.roomId = undefined;
+        socket.roomListIdx = undefined;
       }
     }
-  });
+    // }
+  );
 
   //-------------   여기서 부터 대화방
   socket.on("message", (message, callback) => {
     const currentTime = new Date();
     const room = [...socket.rooms];
-    let messageIdx = roomLatestMessageIdx.get(socket.roomIdx);
-    roomLatestMessageIdx.set(socket.roomIdx, ++messageIdx);
+    let messageIdx = roomLatestMessageIdx.get(socket.roomId);
+    roomLatestMessageIdx.set(socket.roomId, ++messageIdx);
     io.timeout(10000)
       .to(room[1])
       .emit(
@@ -217,10 +250,11 @@ io.on("connection", (socket) => {
   });
 });
 
-cron.schedule("0 0 0 * * *", () => {
+cron.schedule("0 40 20 * * *", () => {
   const currentTime = new Date();
+  console.log("roomList", roomList);
   for (let elem of roomList) {
-    io.to(elem).emit("chat-alert", {
+    io.to(elem.randomRoom).emit("room-alert", {
       status: 206,
       data: {
         midnight: midnight(currentTime),
