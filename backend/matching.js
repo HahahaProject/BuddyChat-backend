@@ -60,8 +60,9 @@ export const matching = (socket) => {
     console.log("매칭된적 있고 대기열에 나만 있어요");
     return;
   } else {
+    // 여기 해야함.
     console.log("매칭된적 있고, 대기열에 매치되었던 사람뿐이에요");
-    socket.checkUserPair;
+    // socket.checkUserPair;
     console.log("매칭된적 있고, 대기열에 매치된적 없는 새로운사람이 있어요 ");
   }
 };

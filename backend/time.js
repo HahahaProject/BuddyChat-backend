@@ -1,23 +1,28 @@
 const TIME_ZONE = 9 * 60 * 60 * 1000;
 
-export const time = (currentDate) => {
-  return `${currentDate.getFullYear()}-${
-    currentDate.getMonth() + 1
-  }-${currentDate.getDate()} ${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
+export const timeFormat = (currentDate) => {
+  let month = String(currentDate.getMonth() + 1).padStart(2, "0");
+  let day = String(currentDate.getDate()).padStart(2, "0");
+  let hour = String(currentDate.getHours()).padStart(2, "0");
+  let minute = String(currentDate.getMinutes()).padStart(2, "0");
+  return (
+    currentDate.getFullYear() +
+    "-" +
+    month +
+    "-" +
+    day +
+    " " +
+    hour +
+    ":" +
+    minute
+  );
 };
 
 export const midnight = (currentDate) => {
-  return `${currentDate.getFullYear()}-${
-    currentDate.getMonth() + 1
-  }-${currentDate.getDate()} 00:00:00`;
-};
+  let month = String(currentDate.getMonth() + 1).padStart(2, "0");
+  let day = String(currentDate.getDate()).padStart(2, "0");
 
-export const messageTime = (currentDate) => {
-  return `${new Date(currentDate.getTime() + TIME_ZONE)
-    .toISOString()
-    .replace("T", " ")
-    .slice(11, -8)}
-`;
+  return currentDate.getFullYear() + "-" + month + "-" + day + " 00:00";
 };
 
 export const calLapseTime = (chatEndTime, chatStartTime) => {
@@ -30,8 +35,7 @@ export const calLapseTime = (chatEndTime, chatStartTime) => {
     2,
     "0"
   ); // 분
-  const second = String(Math.floor((lapseTime / 1000) % 60)).padStart(2, "0"); // 초
-  const result = `${hour} : ${minutes} : ${second}`;
+  const seconds = String(Math.floor((lapseTime / 1000) % 60)).padStart(2, "0");
 
-  return result;
+  return `${hour}:${minutes}:${seconds}`;
 };
