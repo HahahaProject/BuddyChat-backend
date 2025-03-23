@@ -109,7 +109,7 @@ io.on("connection", (socket) => {
 
   socket.on("room-outside", (callback) => {
     const room = [...socket.rooms];
-    console.log("단절된 socket의 room 목록", room);
+
     socket.chatEndTime = Date.now();
     const currentTime = new Date();
     io.timeout(10000)
@@ -131,6 +131,7 @@ io.on("connection", (socket) => {
         }
       );
     socket.leave(room[1]);
+    console.log("단절된 socket의 room 목록", room);
     callback({
       status: 204,
       message: "나가기성공",
@@ -138,6 +139,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("chat-alert", (arg) => {
+    console.log("종료위한 chat-alert실행중");
     const currentRoomStatus = [...socket.rooms];
     if (currentRoomStatus[1]) {
       for (let elem of roomList) {
@@ -208,10 +210,10 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.on("typing", (inputState) => {
+  socket.on("typing", (typingState) => {
     const room = [...socket.rooms];
     socket.broadcast.to(room[1]).emit("typing", {
-      isEmpty: inputState.isEmpty,
+      typing: typingState.typing,
     });
   });
 });

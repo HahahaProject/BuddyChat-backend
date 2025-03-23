@@ -59,30 +59,6 @@ export const matching = (socket) => {
     console.log("매칭된적 있고, 대기열에 매치된적 없는 새로운사람이 있어요 ");
   }
 };
-// console.log("pairList.size ", pairList.size);
-// console.log(" currentQueueStatus.length", currentQueueStatus.length);
-
-// 여기 매칭취소하고 다시 구현
-// 매칭된적이 있고, 대기열속에 사람들이 있을거나 본인밖에 없을때?
-// index = 1;
-// for (let elem of pairList) {
-//   if (elem == priorityQueue.peek(i)) {
-//     continue;
-//   } else {
-//     break;
-//   }
-//   index++;
-// }
-
-/**
- * 한번도 매칭되지 않았던 사람이랑 매칭한다.
- * ->매칭기록은 checkUserPair에 저장되어있다.
- * ->checkUserPair에 저장된 사람들을 제외한다.
- *    그러려면 우선 저장된 사람들을 안다.
- *    저장된 사람들이 어느 인덱스인지 안다.
- *    그 인덱스를 제외하고 가장 최소값인덱스를 peek한다.
- * -> 매칭성공하면 checkUserPair에 등록한다.
- */
 
 export const matchCancel = (socket) => {
   console.log("삭제될 소켓 pos", socket.myPosInQueue);

@@ -130,8 +130,6 @@
           socket.emit("chat-alert");
         }
         // 종료알림
-        // 자정알림을 따로 나누는게 좋을듯.
-        console.log("arg", arg);
       });
 
       form.addEventListener("submit", (e) => {
@@ -157,7 +155,7 @@
         });
       });
 
-      let isEmpty = true;
+      let typing = false;
       let number = 0;
       /**
        * inputStatus가 맨 처음엔 false인데
@@ -171,32 +169,30 @@
        *
        */
       function change() {
-        isEmpty = true;
+        typing = false;
         console.log("엔터침");
         socket.emit("typing", {
-          isEmpty: isEmpty,
+          typing: false,
         });
       }
       function inputChange() {
         let inputWindow = document.getElementById("input");
-        if (isEmpty == true && input.value.length !== 0) {
+        if (typing == false && input.value.length !== 0) {
           // 처음 치기 시작했을때
           socket.emit("typing", {
-            isEmpty: false,
+            typing: true,
           });
-          isEmpty = false;
+          typing = true;
         } else if (input.value.length == 0) {
-          isEmpty = true;
+          typing = false;
         }
       }
-      socket.on("typing", (inputState) => {
-        let typingStatus = document.getElementById("typing");
-        if (inputState.isEmpty == false) {
-          console.log("현재 false");
-          typingStatus.innerHTML = "사용자가 타이핑중입니다.";
+      socket.on("typing", (typingState) => {
+        let typingNode = document.getElementById("typing");
+        if (typingState.typing == true) {
+          typingNode.innerHTML = "사용자가 타이핑중입니다.";
         } else {
-          console.log("현재 true");
-          typingStatus.innerHTML = "";
+          typingNode.innerHTML = "";
         }
       });
     </script>
