@@ -5,7 +5,7 @@ class QueueEventListener extends EventEmitter {}
 export const queueEvent = new QueueEventListener();
 
 let priorityQueue = new PriorityQueue();
-let checkUsers = new Set(); // 중복버튼 클릭인지 확인용
+export let checkUsers = new Set(); // 중복버튼 클릭인지 확인용
 // disconnect될때 checkUsers에셔 해당 id 없애줘야함.
 let myPosInQueue;
 
@@ -13,7 +13,11 @@ export const queueIn = (socket) => {
   // 중복을 검사해서 줄복이면 우선순위큐에 넣지않음.
   // 짝지어진 적이 있는 경우 모음
   if (!checkUsers.has(socket.id)) {
-    socket.myPosInQueue = priorityQueue.insert(socket.id);
+    const insertInfo = {
+      id: socket.id,
+      enterTime: socket.enterTime,
+    };
+    socket.myPosInQueue = priorityQueue.insert(insertInfo);
     checkUsers.add(socket.id);
     return socket;
   } else {
@@ -26,6 +30,7 @@ export const matching = (socket) => {
   // socketid가 했었던 pairList를 반환받음.
   let pairList = [...socket.checkUserPair] || [];
   let currentQueueStatus = priorityQueue.peekAll();
+  console.log("현재 힙상태", currentQueueStatus);
   let partner, index, randomRoom, me, chatStartTime;
   if (pairList.length == 0 && currentQueueStatus.length == 2) {
     // 매칭된적이 없고, 대기열속에 본인밖에 없는경우
@@ -35,7 +40,7 @@ export const matching = (socket) => {
     // 매칭된적이 없고, 대기열속에 사람들이 있을때
     console.log("매칭된적 없고 대기열에 또 다른 누군가가 있어요");
     for (index = 1; index < currentQueueStatus.length; index++) {
-      if (socket.id !== priorityQueue.peek(index).socketId) {
+      if (socket.id !== priorityQueue.peek(index).id) {
         me = priorityQueue.shift(socket.myPosInQueue);
         partner = priorityQueue.shift(index);
         break;
@@ -44,6 +49,7 @@ export const matching = (socket) => {
     chatStartTime = Date.now();
     randomRoom = uuidv4();
     socket.myPosInQueue = undefined;
+    checkUsers.delete(socket.id);
     return {
       me: me,
       partner: partner,

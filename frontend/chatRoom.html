@@ -127,6 +127,7 @@
       socket.on("chat-alert", (arg, callback) => {
         if (arg.status == 200) {
           // 종료알림일경우
+          console.log("arg", arg);
           socket.emit("chat-alert");
         }
         // 종료알림
@@ -157,17 +158,6 @@
 
       let typing = false;
       let number = 0;
-      /**
-       * inputStatus가 맨 처음엔 false인데
-       * inputChange함수가 불려지면 true로 바뀐다.
-       * false에서 true로 바뀔때만 socket.emit(typing)이 된다.
-       * 그러다가 onchnage가 되거나 다시 input내용이 비어있으면 socket.emit(typint false)한다.
-       *
-       *  socket.emit(typing이 true가 된다. )
-       *  알고리즘이 너무 복잡한가..??
-       *
-       *
-       */
       function change() {
         typing = false;
         console.log("엔터침");

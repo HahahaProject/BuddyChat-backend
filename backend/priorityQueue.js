@@ -49,7 +49,6 @@ export class PriorityQueue {
     }
     heap.splice(pos, 1);
     size = --this.#size;
-    console.log("지금 힙상태", heap);
     if (size > 0 && pos <= size) {
       if (
         pos > 1 &&
