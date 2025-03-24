@@ -2,8 +2,6 @@ import { v4 as uuidv4 } from "uuid";
 import EventEmitter from "events";
 import { PriorityQueue } from "./module/priorityQueue.js";
 import { matchSuccessObject } from "./module/matchSuccessObject.js";
-class QueueEventListener extends EventEmitter {}
-export const queueEvent = new QueueEventListener();
 
 let priorityQueue = new PriorityQueue();
 export let checkUsers = new Set(); // 중복버튼 클릭인지 확인용
@@ -61,10 +59,12 @@ export const matching = (socket) => {
       });
       priorityQueue.shift(partnerPos);
       // 매치결과 반환
-      let result = matchSuccessObject(socket);
-      result.me = me;
-      result.partner = partner;
-      return result;
+      return {
+        me: me,
+        partner: partner,
+        randomRoom: randomRoom,
+        chatStartTime: chatStartTime,
+      };
     } else {
       console.log("2-2. 매칭할 사람이 없어요.");
       return;
