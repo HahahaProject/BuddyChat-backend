@@ -1,7 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import EventEmitter from "events";
 import { PriorityQueue } from "./module/priorityQueue.js";
-import { matchSuccessObject } from "./module/matchSuccessObject.js";
 
 let priorityQueue = new PriorityQueue();
 export let checkUsers = new Set(); // 중복버튼 클릭인지 확인용
@@ -59,6 +57,12 @@ export const matching = (socket) => {
       });
       priorityQueue.shift(partnerPos);
       // 매치결과 반환
+      const chatStartTime = Date.now();
+      const randomRoom = uuidv4();
+
+      checkUsers.delete(socket.id);
+      socket.myPosInQueue = undefined;
+
       return {
         me: me,
         partner: partner,
