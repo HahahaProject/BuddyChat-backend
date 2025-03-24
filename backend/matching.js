@@ -1,13 +1,12 @@
 import { v4 as uuidv4 } from "uuid";
 import EventEmitter from "events";
-import { PriorityQueue } from "./priorityQueue.js";
+import { PriorityQueue } from "./module/priorityQueue.js";
+import { matchSuccessObject } from "./module/matchSuccessObject.js";
 class QueueEventListener extends EventEmitter {}
 export const queueEvent = new QueueEventListener();
 
 let priorityQueue = new PriorityQueue();
 export let checkUsers = new Set(); // 중복버튼 클릭인지 확인용
-// disconnect될때 checkUsers에셔 해당 id 없애줘야함.
-let myPosInQueue;
 
 export const queueIn = (socket) => {
   // 중복을 검사해서 줄복이면 우선순위큐에 넣지않음.
@@ -28,42 +27,48 @@ export const queueIn = (socket) => {
 
 export const matching = (socket) => {
   // socketid가 했었던 pairList를 반환받음.
-  let pairList = [...socket.checkUserPair] || [];
+  // checkUserPair는 pair를 했던 사람들의 기록
   let currentQueueStatus = priorityQueue.peekAll();
-  console.log("현재 힙상태", currentQueueStatus);
-  let partner, index, randomRoom, me, chatStartTime;
-  if (pairList.length == 0 && currentQueueStatus.length == 2) {
-    // 매칭된적이 없고, 대기열속에 본인밖에 없는경우
-    console.log("매칭된적 없고, 본인밖에 없어요");
+  let partner, randomRoom, me, chatStartTime;
+
+  if (currentQueueStatus.length == 2) {
+    console.log("1. 매칭된적 있든없든, 대기열에 본인밖에 없어요");
     return;
-  } else if (pairList.length == 0 && currentQueueStatus.length > 2) {
-    // 매칭된적이 없고, 대기열속에 사람들이 있을때
-    console.log("매칭된적 없고 대기열에 또 다른 누군가가 있어요");
-    for (index = 1; index < currentQueueStatus.length; index++) {
-      if (socket.id !== priorityQueue.peek(index).id) {
-        me = priorityQueue.shift(socket.myPosInQueue);
-        partner = priorityQueue.shift(index);
+  } else {
+    console.log("2. 대기열속에 사람들이 많아요.");
+    // 대기열속에 매칭할 사람이 있던가 없던가.
+    // 대기열속 본인이나 chatUserPair에 has로 했던 사람 다 제외
+
+    // 파트너 아이디 결정
+    for (let elem of currentQueueStatus) {
+      if (!elem || elem.id == socket.id || socket.checkUserPair.has(elem.id)) {
+        continue;
+      } else {
+        partner = elem;
         break;
       }
     }
-    chatStartTime = Date.now();
-    randomRoom = uuidv4();
-    socket.myPosInQueue = undefined;
-    checkUsers.delete(socket.id);
-    return {
-      me: me,
-      partner: partner,
-      randomRoom: randomRoom,
-      chatStartTime: chatStartTime,
-    };
-  } else if (currentQueueStatus.length == 2) {
-    console.log("매칭된적 있고 대기열에 나만 있어요");
-    return;
-  } else {
-    // 여기 해야함.
-    console.log("매칭된적 있고, 대기열에 매치되었던 사람뿐이에요");
-    // socket.checkUserPair;
-    console.log("매칭된적 있고, 대기열에 매치된적 없는 새로운사람이 있어요 ");
+
+    if (partner) {
+      console.log("2-1. 매칭할 사람이 있어요.");
+      //나 힙에서 제거
+      me = priorityQueue.shift(socket.myPosInQueue);
+      //파트너 힙에서 제거
+      let partnerPos;
+      currentQueueStatus = priorityQueue.peekAll();
+      currentQueueStatus.filter((elem, idx, arr) => {
+        if (elem == partner) partnerPos = idx;
+      });
+      priorityQueue.shift(partnerPos);
+      // 매치결과 반환
+      let result = matchSuccessObject(socket);
+      result.me = me;
+      result.partner = partner;
+      return result;
+    } else {
+      console.log("2-2. 매칭할 사람이 없어요.");
+      return;
+    }
   }
 };
 

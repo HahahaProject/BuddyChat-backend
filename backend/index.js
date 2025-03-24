@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { queueIn, matching } from "./matching.js";
 import { matchCancel, checkUsers } from "./matching.js";
-import { timeFormat, midnight, calLapseTime } from "./time.js";
+import { timeFormat, midnight, calLapseTime } from "./module/time.js";
 import cron from "node-cron";
 
 const app = express();
@@ -33,7 +33,7 @@ io.on("connection", (socket) => {
   socket.on("match-start", (callback) => {
     console.log("random-match 실행중");
     socket.enterTime = Date.now();
-    if (!socket.checkUsersPair) {
+    if (!socket.checkUserPair) {
       socket.checkUserPair = new Set();
     }
     let returnSocket = queueIn(socket);
@@ -50,6 +50,7 @@ io.on("connection", (socket) => {
           message: "매칭등록",
         });
         socket = returnSocket;
+        // console.log("socket", socket);
         matchingResult = matching(socket);
         console.log("매칭결과에요", matchingResult);
         socket.timer = setTimeout(() => {
@@ -65,6 +66,7 @@ io.on("connection", (socket) => {
           roomList.set(count, matchingResult);
 
           const currentTime = new Date();
+          console.log("matchingresult", matchingResult);
           const partnerSocket = io.sockets.sockets.get(
             matchingResult.partner.id
           );
@@ -95,6 +97,14 @@ io.on("connection", (socket) => {
             socket.chatStartTime = Date.now();
             partnerSocket.chatStartTime = Date.now();
 
+            //매칭되었던 유저 저장
+            socket.checkUserPair.add(partnerSocket.id);
+            console.log("socket.checkUserPair update", socket.checkUserPair);
+            partnerSocket.checkUserPair.add(socket.id);
+            console.log(
+              "PartmerSocket.checkUserPair update",
+              partnerSocket.checkUserPair
+            );
             // console.log("io.adaptert", io.sockets.adapter.rooms);
             io.to(matchingResult.randomRoom).emit("room-alert", {
               status: 200,
@@ -199,7 +209,6 @@ io.on("connection", (socket) => {
       const currentTime = new Date();
       console.log("roomListIdx", socket.roomListIdx);
       if (socket.roomListIdx && roomList.get(socket.roomListIdx)) {
-        console.log("roomList", roomList);
         console.log("roomList.get", roomList.get(socket.roomListIdx));
         socket.broadcast.to(socket.roomId).emit("room-alert", {
           status: 200,
@@ -225,6 +234,13 @@ io.on("connection", (socket) => {
         // 소켓룸아이디 제거
         socket.roomId = undefined;
         socket.roomListIdx = undefined;
+        // 현 소켓과 연결되었었던 소켓들의 checkUserPair에서 현소켓 삭제
+        const pairArray = [...socket.checkUserPair];
+        console.log("pairArray", socket.id, pairArray);
+        for (let elem of pairArray) {
+          const partnerSocket = io.sockets.sockets.get(elem);
+          partner.checkUserPair.delete(socket.id);
+        }
       }
     }
     // }
