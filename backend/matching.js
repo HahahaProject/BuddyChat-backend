@@ -7,17 +7,23 @@ export let checkUsers = new Set(); // 중복버튼 클릭인지 확인용
 export const queueIn = (socket) => {
   // 중복을 검사해서 줄복이면 우선순위큐에 넣지않음.
   // 짝지어진 적이 있는 경우 모음
-  if (!checkUsers.has(socket.id)) {
-    const insertInfo = {
-      id: socket.id,
-      enterTime: socket.enterTime,
-    };
-    socket.myPosInQueue = priorityQueue.insert(insertInfo);
-    checkUsers.add(socket.id);
-    return socket;
-  } else {
-    //중복등록함
-    return false;
+  try {
+    if (!checkUsers.has(socket.id)) {
+      const insertInfo = {
+        id: socket.id,
+        enterTime: socket.enterTime,
+      };
+      socket.myPosInQueue = priorityQueue.insert(insertInfo);
+      checkUsers.add(socket.id);
+      return socket;
+    } else {
+      //중복등록함
+      return false;
+    }
+  } catch (err) {
+    throw new Error("");
+    // 여기를 어떻게 쓰지? 써야하나?
+    // customerror?
   }
 };
 
@@ -35,7 +41,7 @@ export const matching = (socket) => {
     // 대기열속에 매칭할 사람이 있던가 없던가.
     // 대기열속 본인이나 chatUserPair에 has로 했던 사람 다 제외
 
-    // 파트너 아이디 결정
+    // 파트너 결정
     for (let elem of currentQueueStatus) {
       if (!elem || elem.id == socket.id || socket.checkUserPair.has(elem.id)) {
         continue;

@@ -6,6 +6,7 @@ import { dirname, join } from "node:path";
 import { queueIn, matching } from "./matching.js";
 import { matchCancel, checkUsers } from "./matching.js";
 import { timeFormat, midnight, calLapseTime } from "./module/time.js";
+import { wrapper } from "./wrapper.js";
 import cron from "node-cron";
 
 const app = express();
@@ -30,97 +31,121 @@ io.on("connection", (socket) => {
   console.log("개인소켓 연결됨.");
   console.log("server.socketId", socket.id);
 
-  socket.on("match-start", (callback) => {
-    console.log("random-match 실행중");
-    socket.enterTime = Date.now();
-    if (!socket.checkUserPair) {
-      socket.checkUserPair = new Set();
-    }
-    let returnSocket = queueIn(socket);
-    if (socket.myPosInQueue)
-      if (returnSocket == false) {
-        //그냥 처음 누른것에대해서 20초 카운트되는걸로
-        callback({
-          status: 202,
-          message: "중복등록",
-        });
-      } else {
-        callback({
-          status: 201,
-          message: "매칭등록",
-        });
-        socket = returnSocket;
-        // console.log("socket", socket);
-        matchingResult = matching(socket);
-        console.log("매칭결과에요", matchingResult);
-        socket.timer = setTimeout(() => {
-          console.log("타임아웃끝");
-          socket.emit("match-result", {
-            status: 408,
-            message: "매치 시간초과",
+  // socket.on(
+  //   "hello",
+  //   errorHandler((callback) => {
+  //     // throw new Error("시헙에러");
+  //     callback({
+  //       status: 600,
+  //       message: "죽겠다",
+  //     });
+  //   })
+  // );
+  // errorHandler((...args) => {
+  //   console.log("지금 내부함수 실행중이야");
+  //   console.log("바깥에서 args", ...args);
+  //   throw new Error("let's panic");
+  // })
+
+  // 콜백으로 500처리가 가능한가?
+  // 그리고 이건 on인데 emit은 가능한가?
+  // 오류 처리는 언제해야해?
+  //
+
+  socket.on(
+    "match-start",
+    wrapper((callback) => {
+      console.log("random-match 실행중");
+      socket.enterTime = Date.now();
+      if (!socket.checkUserPair) {
+        socket.checkUserPair = new Set();
+      }
+      let returnSocket = queueIn(socket);
+      if (socket.myPosInQueue)
+        if (returnSocket == false) {
+          //그냥 처음 누른것에대해서 20초 카운트되는걸로
+          callback({
+            status: 202,
+            message: "중복등록",
           });
-        }, 10000);
-
-        if (matchingResult) {
-          console.log("매칭성공");
-          roomList.set(count, matchingResult);
-
-          const currentTime = new Date();
-          console.log("matchingresult", matchingResult);
-          const partnerSocket = io.sockets.sockets.get(
-            matchingResult.partner.id
-          );
-          if (partnerSocket) {
-            // roomList Idx 추가
-            socket.roomListIdx = count;
-            partnerSocket.roomListIdx = count;
-            count++;
-
-            // 타입아웃 멈춤
-            clearTimeout(socket.timer);
-            clearTimeout(partnerSocket.timer);
-
-            // 룸에 조인
-            socket.join(matchingResult.randomRoom);
-            partnerSocket.join(matchingResult.randomRoom);
-            socket.roomId = matchingResult.randomRoom;
-            partnerSocket.roomId = matchingResult.randomRoom;
-
-            // messageIdx값 저장
-            roomLatestMessageIdx.set(socket.roomId, 0);
-
-            // queue내에서의 정보 초기화
-            socket.myPosInQueue = undefined;
-            partnerSocket.myPosInQueue = undefined;
-
-            // 채팅시작시간 저장
-            socket.chatStartTime = Date.now();
-            partnerSocket.chatStartTime = Date.now();
-
-            //매칭되었던 유저 저장
-            socket.checkUserPair.add(partnerSocket.id);
-            console.log("socket.checkUserPair update", socket.checkUserPair);
-            partnerSocket.checkUserPair.add(socket.id);
-            console.log(
-              "PartmerSocket.checkUserPair update",
-              partnerSocket.checkUserPair
-            );
-            // console.log("io.adaptert", io.sockets.adapter.rooms);
-            io.to(matchingResult.randomRoom).emit("room-alert", {
-              status: 200,
-              message: "매치 성공",
-              date: {
-                type: "join",
-                joinTime: timeFormat(currentTime),
-                nickName: socket.nickName || null,
-                roomName: null,
-                socket: socket.id,
-              },
+        } else {
+          callback({
+            status: 201,
+            message: "매칭등록",
+          });
+          socket = returnSocket;
+          // console.log("socket", socket);
+          matchingResult = matching(socket);
+          console.log("매칭결과에요", matchingResult);
+          socket.timer = setTimeout(() => {
+            console.log("타임아웃끝");
+            socket.emit("match-result", {
+              status: 408,
+              message: "매치 시간초과",
             });
+          }, 10000);
+
+          if (matchingResult) {
+            console.log("매칭성공");
+            roomList.set(count, matchingResult);
+
+            const currentTime = new Date();
+            console.log("matchingresult", matchingResult);
+            const partnerSocket = io.sockets.sockets.get(
+              matchingResult.partner.id
+            );
+            if (partnerSocket) {
+              // roomList Idx 추가
+              socket.roomListIdx = count;
+              partnerSocket.roomListIdx = count;
+              count++;
+
+              // 타입아웃 멈춤
+              clearTimeout(socket.timer);
+              clearTimeout(partnerSocket.timer);
+
+              // 룸에 조인
+              socket.join(matchingResult.randomRoom);
+              partnerSocket.join(matchingResult.randomRoom);
+              socket.roomId = matchingResult.randomRoom;
+              partnerSocket.roomId = matchingResult.randomRoom;
+
+              // messageIdx값 저장
+              roomLatestMessageIdx.set(socket.roomId, 0);
+
+              // queue내에서의 정보 초기화
+              socket.myPosInQueue = undefined;
+              partnerSocket.myPosInQueue = undefined;
+
+              // 채팅시작시간 저장
+              socket.chatStartTime = Date.now();
+              partnerSocket.chatStartTime = Date.now();
+
+              //매칭되었던 유저 저장
+              socket.checkUserPair.add(partnerSocket.id);
+              console.log("socket.checkUserPair update", socket.checkUserPair);
+              partnerSocket.checkUserPair.add(socket.id);
+              console.log(
+                "PartmerSocket.checkUserPair update",
+                partnerSocket.checkUserPair
+              );
+              // console.log("io.adaptert", io.sockets.adapter.rooms);
+              io.to(matchingResult.randomRoom).emit("room-alert", {
+                status: 200,
+                message: "매치 성공",
+                date: {
+                  type: "join",
+                  joinTime: timeFormat(currentTime),
+                  nickName: socket.nickName || null,
+                  roomName: null,
+                  socket: socket.id,
+                },
+              });
+            }
           }
         }
-      }
-  });
+    })
+  );
 
   socket.on("match-cancel", (callback) => {
     matchCancel(socket);
@@ -239,7 +264,7 @@ io.on("connection", (socket) => {
         console.log("pairArray", socket.id, pairArray);
         for (let elem of pairArray) {
           const partnerSocket = io.sockets.sockets.get(elem);
-          partner.checkUserPair.delete(socket.id);
+          partnerSocket.checkUserPair.delete(socket.id);
         }
       }
     }
@@ -292,6 +317,7 @@ cron.schedule("0 0 0 * * *", () => {
   for (let elem of roomList) {
     io.to(elem.randomRoom).emit("room-alert", {
       status: 206,
+      message: "자정알림",
       data: {
         midnight: midnight(currentTime),
       },
