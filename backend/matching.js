@@ -70,6 +70,7 @@ export const matching = (socket) => {
       socket.myPosInQueue = undefined;
 
       return {
+        type: "random",
         me: me,
         partner: partner,
         randomRoom: randomRoom,
