@@ -63,7 +63,6 @@ io.on("connection", (socket) => {
           });
         }
 
-        // if (returnSocket) {
         // 중복이 아닌경우
         callback({
           status: 201,
@@ -182,15 +181,12 @@ io.on("connection", (socket) => {
     })
   );
 
-  socket.on(
-    "disconnect",
-    wrapper(() => {
+  socket.on("disconnect", () => {
+    try {
       let chatEndTime = Date.now();
       const room = [...socket.rooms];
       const currentTime = new Date();
-
-      if (!socket.socket.roomListIdx || !roomList.get(socket.roomListIdx))
-        return;
+      if (!socket.roomListIdx || !roomList.get(socket.roomListIdx)) return;
 
       broadcastRoomAlert(io, socket, room[1], "out");
 
@@ -205,12 +201,22 @@ io.on("connection", (socket) => {
       socket.roomListIdx = undefined;
       // 현 소켓과 연결되었었던 소켓들의 checkUserPair에서 현소켓 삭제
       const pairArray = [...socket.checkUserPair];
+      if (pairArray) {
+        console.log("값이 있을때 ,", pairArray);
+      } else if (!pairArray) {
+        console.log("값이 없을때 ,", pairArray);
+      }
+
+      if (!pairArray) return;
       for (let elem of pairArray) {
         const partnerSocket = io.sockets.sockets.get(elem);
+        if (!partnerSocket) continue;
         partnerSocket.checkUserPair.delete(socket.id);
       }
-    })
-  );
+    } catch (err) {
+      console.log("disconnect에서 서버에러", err);
+    }
+  });
 
   //-------------   여기서 부터 대화방
   socket.on("chat-message", (message, callback) => {
