@@ -7,8 +7,14 @@ import { queueIn, matching } from "./matching.js";
 import { matchCancel, checkUsers } from "./matching.js";
 import { timeFormat, midnight, calLapseTime, timeout } from "./module/time.js";
 import { wrapper } from "./wrapper.js";
-import { addSocketProperties } from "./module/addProperties.js";
-import { joinRoom, leaveRoom, roomAlert, emitMessage } from "./socket.js";
+import { checkUsersDelete } from "./module/checkUserDelete.js";
+import { setSocketProperties } from "./module/addProperties.js";
+import {
+  bothJoinRoom,
+  bothLeaveRoom,
+  broadcastRoomAlert,
+  broadcastEmitMessage,
+} from "./socket.js";
 import cron from "node-cron";
 
 const app = express();
@@ -62,7 +68,6 @@ io.on("connection", (socket) => {
           message: "매칭등록",
         });
         // 타임아웃을 시작한다.
-        // setTimeout(socket);
         socket.timer = setTimeout(() => {
           socket.emit("match-result", {
             status: 408,
@@ -81,18 +86,23 @@ io.on("connection", (socket) => {
         }
         // 5. 파트너소켓이 있으면
         if (partnerSocket) {
-          addSocketProperties({
-            socket: socket,
-            partnerSocket: partnerSocket,
-            roomListCount: count,
-          });
+          setSocketProperties(
+            {
+              socket: socket,
+              partnerSocket: partnerSocket,
+            },
+            {
+              roomListCount: count,
+            },
+            "matchStart"
+          );
           // 다음 roomList를 위한 count 증가
           count++;
           // messageIdx값 저장
           roomLatestMessageIdx.set(matchingResult.randomRoom, 0);
           timeout(socket, partnerSocket);
-          joinRoom(socket, partnerSocket, matchingResult.randomRoom);
-          roomAlert(io, socket, matchingResult.randomRoom, "join");
+          bothJoinRoom(socket, partnerSocket, matchingResult.randomRoom);
+          broadcastRoomAlert(io, socket, matchingResult.randomRoom, "join");
         }
       }
     })
@@ -111,6 +121,7 @@ io.on("connection", (socket) => {
     const room = [...socket.rooms];
     const roomListIdx = socket.roomListIdx;
     const roomInfo = roomList.get(roomListIdx);
+
     if (roomInfo) {
       let partnerSocket;
       if (roomInfo.me.id == socket.id) {
@@ -119,29 +130,31 @@ io.on("connection", (socket) => {
         partnerSocket = io.sockets.sockets.get(roomInfo.me.id);
       }
 
-      socket.chatEndTime = Date.now();
-      partnerSocket.chatEndTime = Date.now();
-
       // 룸리스트에서 제거
       roomList.delete(roomListIdx);
       count--;
 
       // 중복누름 확인용 set에서 제거
-      checkUsers.delete(socket.id);
-      checkUsers.delete(partnerSocket.id);
+      checkUsersDelete(socket.id, partnerSocket.id);
 
       // room별 messageIdx 지움
       roomLatestMessageIdx.delete(room[1]);
-      roomAlert(io, socket, room[1], "out");
-
-      //룸에서 나감.
-      leaveRoom(socket, partnerSocket, room[1]);
 
       //roomId 제거
-      socket.roomListIdx = undefined;
-      partnerSocket.roomListIdx = undefined;
+      setSocketProperties(
+        {
+          socket: socket,
+          partnerSocket: partnerSocket,
+        },
+        {
+          dateNow: Date.now(),
+        },
+        "roomOutside"
+      );
+      broadcastRoomAlert(io, socket, room[1], "out");
+      bothLeaveRoom(socket, partnerSocket, room[1]);
     } else if (!roomInfo) {
-      // 한쪽이 disconnect된 경우
+      console.log("상대가 disconnect되고있는 중일때?");
       socket.leave(room[1]);
       socket.roomListIdx = undefined;
     }
@@ -156,6 +169,7 @@ io.on("connection", (socket) => {
     () => {
       let chatEndTime = Date.now();
       const room = [...socket.rooms];
+      console.log("room", room);
       const currentTime = new Date();
       console.log("roomListIdx", socket.roomListIdx);
       if (socket.roomListIdx && roomList.get(socket.roomListIdx)) {
@@ -201,7 +215,7 @@ io.on("connection", (socket) => {
     const room = [...socket.rooms];
     let messageIdx = roomLatestMessageIdx.get(room[1]);
     roomLatestMessageIdx.set(room[1], ++messageIdx);
-    emitMessage(io, socket, room[1], messageIdx, message);
+    broadcastEmitMessage(io, socket, room[1], messageIdx, message);
     callback({
       status: 200,
       message: "송신",

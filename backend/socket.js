@@ -1,16 +1,16 @@
 import { timeFormat, midnight, calLapseTime, timeout } from "./module/time.js";
 
-export const joinRoom = (socket, partnerSocket, randomRoom) => {
+export const bothJoinRoom = (socket, partnerSocket, randomRoom) => {
   socket.join(randomRoom);
   partnerSocket.join(randomRoom);
 };
 
-export const leaveRoom = (socket, partnerSocket, randomRoom) => {
+export const bothLeaveRoom = (socket, partnerSocket, randomRoom) => {
   socket.leave(randomRoom);
   partnerSocket.leave(randomRoom);
 };
 
-export const roomAlert = (io, socket, randomRoom, type) => {
+export const broadcastRoomAlert = (io, socket, randomRoom, type) => {
   const currentTime = new Date();
 
   const handler = {
@@ -23,20 +23,20 @@ export const roomAlert = (io, socket, randomRoom, type) => {
           joinTime: timeFormat(currentTime),
           nickName: socket.nickName || null,
           roomName: null,
-          socket: socket.id,
+          socketId: socket.id,
         },
       });
     },
     out: () => {
       io.to(randomRoom).emit("room-alert", {
-        status: 200,
+        status: 204,
         message: "채팅방 종료",
         data: {
           type: "out",
           roomOutTime: timeFormat(currentTime),
           chatTime: calLapseTime(socket.chatEndTime, socket.chatStartTime),
           nickName: socket.nickName || null,
-          socket: socket.id,
+          socketId: socket.id,
         },
       });
     },
@@ -58,7 +58,13 @@ export const roomAlert = (io, socket, randomRoom, type) => {
   }
 };
 
-export const emitMessage = (io, socket, randomRoom, messageIdx, message) => {
+export const broadcastEmitMessage = (
+  io,
+  socket,
+  randomRoom,
+  messageIdx,
+  message
+) => {
   const currentTime = new Date();
   io.timeout(1000)
     .to(randomRoom)
@@ -70,7 +76,7 @@ export const emitMessage = (io, socket, randomRoom, messageIdx, message) => {
         data: {
           chatMessageIdx: messageIdx,
           chatTime: timeFormat(currentTime),
-          sender: socket.id,
+          senderId: socket.id,
           nickName: socket.nickname || null,
           chatMessage: message,
         },
