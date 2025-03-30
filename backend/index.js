@@ -173,11 +173,6 @@ io.on("connection", (socket) => {
       );
       broadcastRoomAlert(io, socket, room[1], "out");
       bothLeaveRoom(socket, partnerSocket, room[1]);
-
-      callback({
-        status: 204,
-        message: "나가기성공",
-      });
     })
   );
 
@@ -226,10 +221,6 @@ io.on("connection", (socket) => {
       let messageIdx = roomLatestMessageIdx.get(room[1]);
       roomLatestMessageIdx.set(room[1], ++messageIdx);
       broadcastEmitMessage(io, socket, room[1], messageIdx, message);
-      callback({
-        status: 200,
-        message: "송신",
-      });
     } catch (err) {
       callback({
         status: 500,
@@ -245,10 +236,7 @@ io.on("connection", (socket) => {
         typing: typingState.typing,
       });
     } catch (err) {
-      callback({
-        status: 500,
-        message: "서버에러",
-      });
+      console.loe("typing에서 서버에러 ");
     }
   });
 
