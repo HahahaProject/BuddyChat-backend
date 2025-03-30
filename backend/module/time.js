@@ -40,7 +40,7 @@ export const calLapseTime = (chatEndTime, chatStartTime) => {
   return `${hour}:${minutes}:${seconds}`;
 };
 
-export const timeout = (socket, partnerSocket) => {
+export const bothTimeout = (socket, partnerSocket) => {
   clearTimeout(socket.timer);
   clearTimeout(partnerSocket.timer);
 };
