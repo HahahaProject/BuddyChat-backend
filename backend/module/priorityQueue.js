@@ -10,7 +10,6 @@ export class PriorityQueue {
   insert(value) {
     const heap = this.#heap;
     const pos = ++this.#size;
-    console.log("insert size", pos);
     heap[pos] = value;
 
     const returnPos = this.percolateUp(pos);
@@ -39,8 +38,6 @@ export class PriorityQueue {
   removeAt(pos) {
     const heap = this.#heap;
     let size = this.#size;
-    console.log("pos", pos);
-    console.log("size", size);
     if (pos > size || pos < 1) {
       throw new Error("유효하지 않은 pos값.");
     }
@@ -96,7 +93,6 @@ export class PriorityQueue {
   }
 
   shift(pos) {
-    console.log("mypositionInqueue", pos);
     const heap = this.#heap;
     const value = heap[pos];
     if (value === undefined) {

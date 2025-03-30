@@ -84,7 +84,6 @@ export const matching = (socket) => {
 };
 
 export const matchCancel = (socket) => {
-  console.log("삭제될 소켓 pos", socket.myPosInQueue);
   if (socket.myPosInQueue) {
     priorityQueue.removeAt(socket.myPosInQueue);
   }
