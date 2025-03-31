@@ -1,6 +1,6 @@
 import express from "express";
 import http from "node:http";
-import { createServer } from "node:https";
+import https from "node:https";
 import { readFileSync } from "node:fs";
 import { Server } from "socket.io";
 import { fileURLToPath } from "node:url";
@@ -9,19 +9,15 @@ import { socketController } from "./socket/controller.js";
 import cors from "cors";
 import "dotenv/config";
 const app = express();
-const server = http.createServer(app);
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
 const options = {
   key: readFileSync("/etc/letsencrypt/live/api.buddychat.asia/privkey.pem"),
   cert: readFileSync("/etc/letsencrypt/live/api.buddychat.asia/fullchain.pem"),
 };
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    credentials: true,
-    methods: ["GET", "POST"],
-  },
+const server = https.createServer(options, app);
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+app.use((req, res) => {
+  if (!req.secure) res.redirect("https://api.buddychat.asia");
 });
 
 app.use(
@@ -33,14 +29,22 @@ app.use(
 );
 
 app.use(
-  // express.static("/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend")
-  express.static("/root/BuddyChat-backend/frontend")
+  express.static("/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend")
+  // express.static("/root/BuddyChat-backend/frontend")
 );
 app.get("/", (req, res) => {
   res.sendFile(
-    // "/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend/chatRoom.html"
-    "/root/BuddyChat-backend/frontend/chatRoom.html"
+    "/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend/chatRoom.html"
+    // "/root/BuddyChat-backend/frontend/chatRoom.html"
   );
+});
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    credentials: true,
+    methods: ["GET", "POST"],
+  },
 });
 
 io.on("connection", (socket) => {
@@ -51,10 +55,10 @@ io.on("connection", (socket) => {
 });
 
 const currentTime = new Date().toString();
-server.listen(process.env.PORT, () => {
-  console.log(`${process.env.PORT}포트에서 ${currentTime}현재 웹서버 실행중`);
-});
+// server.listen(process.env.PORT, () => {
+//   console.log(`${process.env.PORT}포트에서 ${currentTime}현재 웹서버 실행중`);
+// });
 
-createServer(options, (req, res) => {
+server.listen(443, () => {
   console.log(`443포트에서 ${currentTime}현재 웹서버 실행중 `);
-}).listen(process.env.SSLPORT);
+});
