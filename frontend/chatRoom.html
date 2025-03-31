@@ -80,11 +80,11 @@
       });
 
       socket.on("connect", () => {
-        console.log("WebSocket 연결 성공!", socket.id);
+        console.log("WebSocket 연결 성공", socket.id);
       });
 
       socket.on("connect_error", (err) => {
-        console.error("WebSocket 연결 실패:", err.message);
+        console.error("WebSocket 연결 실패", err.message);
       });
       const form = document.getElementById("form");
       const input = document.getElementById("input");
