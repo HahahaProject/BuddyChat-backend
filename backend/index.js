@@ -13,7 +13,7 @@ const server = http.createServer(app);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const options = {
-  key: readFileSync("/etc/letsencrypt/live/api.buddychat.asia/fullchain.pem"),
+  key: readFileSync("/etc/letsencrypt/live/api.buddychat.asia/privkey.pem"),
   cert: readFileSync("/etc/letsencrypt/live/api.buddychat.asia/fullchain.pem"),
 };
 const io = new Server(server, {
