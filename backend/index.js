@@ -70,11 +70,12 @@ const ioSecure = new Server(httpsServer, {
 // });
 
 io.on("connection", (socket) => {
-  console.log("io 연결되었음");
+  console.log("io 연결되었음", socket.id);
   socketController(socket, io);
 });
+
 ioSecure.on("connection", (socket) => {
-  console.log("ioSecure 연결되었음.");
+  console.log("ioSecure 연결되었음.", socket.id);
   socketController(socket, ioSecure);
 });
 
