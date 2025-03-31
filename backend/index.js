@@ -9,9 +9,8 @@ import { socketController } from "./socket/controller.js";
 import cors from "cors";
 const app = express();
 const options = {
-  key: readFileSync("/etc/letsencrypt/live/buddychat.asia/privkey.pem"),
-  cert: readFileSync("/etc/letsencrypt/live/buddychat.asia/fullchain.pem"),
-  ca: readFileSync("/etc/letsencrypt/live/buddychat.asia/chain.pem"),
+  key: readFileSync("/root/BuddyChat-backend/key.pem"),
+  cert: readFileSync("/root/BuddyChat-backend/cert.pem"),
 };
 
 const httpServer = http.createServer(app);
