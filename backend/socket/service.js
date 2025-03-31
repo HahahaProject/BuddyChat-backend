@@ -207,7 +207,7 @@ export const chatTypingService = (socket, io) => {
     const room = [...socket.rooms];
     socket.broadcast.to(room[1]).emit("chat-typing", {
       data: {
-        typing: typingState.data.typing,
+        typing: typingState,
       },
     });
   };

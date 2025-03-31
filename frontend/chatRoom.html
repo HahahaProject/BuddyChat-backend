@@ -157,11 +157,7 @@
         let inputWindow = document.getElementById("input");
         if (typing == false && input.value.length !== 0) {
           // 처음 치기 시작했을때
-          socket.emit("chat-typing", {
-            data: {
-              typing: true,
-            },
-          });
+          socket.emit("chat-typing", true);
           typing = true;
         } else if (input.value.length == 0) {
           typing = false;
