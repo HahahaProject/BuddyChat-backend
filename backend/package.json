@@ -10,7 +10,10 @@
   "author": "\"정이령\"",
   "license": "ISC",
   "dependencies": {
+    "artillery": "^2.0.22",
+    "artillery-engine-socketio-v3": "^1.2.0",
     "express": "^4.21.2",
+    "node-cron": "^3.0.3",
     "socket.io": "^4.8.1",
     "uuid": "^11.1.0"
   }
