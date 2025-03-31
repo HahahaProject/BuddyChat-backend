@@ -63,17 +63,17 @@ const ioSecure = new Server(httpsServer, {
     methods: ["GET", "POST"],
   },
 });
-
-io.on("connection", (socket) => {
-  console.log("개인소켓 연결됨.");
-  console.log("server.socketId", socket.id);
-
-  socketController(socket, io);
-});
 const socketHandler = (socket, ioInstance) => {
   console.log("개인소켓 연결됨.", socket.id);
   socketController(socket, ioInstance);
 };
+
+// io.on("connection", (socket) => {
+//   console.log("개인소켓 연결됨.");
+//   console.log("server.socketId", socket.id);
+
+//   socketController(socket, io);
+// });
 
 io.on("connection", (socket) => {
   socketController(socket, io);
