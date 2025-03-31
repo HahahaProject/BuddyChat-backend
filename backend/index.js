@@ -57,10 +57,10 @@ const ioSecure = new Server(httpsServer, {
     methods: ["GET", "POST"],
   },
 });
-const socketHandler = (socket, ioInstance) => {
-  console.log("개인소켓 연결됨.", socket.id);
-  socketController(socket, ioInstance);
-};
+// const socketHandler = (socket, ioInstance) => {
+//   console.log("개인소켓 연결됨.", socket.id);
+//   socketController(socket, ioInstance);
+// };
 
 // io.on("connection", (socket) => {
 //   console.log("개인소켓 연결됨.");
@@ -70,9 +70,13 @@ const socketHandler = (socket, ioInstance) => {
 // });
 
 io.on("connection", (socket) => {
+  console.log("io 연결되었음");
   socketController(socket, io);
 });
-ioSecure.on("connection", (socket) => socketHandler(socket, ioSecure));
+ioSecure.on("connection", (socket) => {
+  console.log("ioSecure 연결되었음.");
+  socketController(socket, ioSecure);
+});
 
 const currentTime = new Date().toString();
 // server.listen(process.env.PORT, () => {
