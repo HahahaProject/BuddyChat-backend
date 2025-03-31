@@ -86,13 +86,10 @@
           console.log(response.status);
           console.log(response.message);
         });
-        // socket.emit("hello", (response) => {
-        //   console.log("response", response);
-        // });
       });
 
       socket.on("match-result", (arg) => {
-        console.log("매치결과", arg);
+        console.log("타임아웃", arg);
       });
 
       document
@@ -135,18 +132,14 @@
         }
       });
 
-      socket.on("chat-message", (msg, callback) => {
+      socket.on("chat-message", (response) => {
         const item = document.createElement("li");
         item.textContent =
-          `${msg.data.chatMessageIdx} ` +
-          `${msg.data.chatMessage}` +
-          `${msg.data.chatTime}`;
+          `${response.data.chatMessageIdx} ` +
+          `${response.data.chatMessage}` +
+          `${response.data.chatTime}`;
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
-        callback({
-          status: 201,
-          message: "수신",
-        });
       });
 
       let typing = false;
@@ -154,8 +147,10 @@
       function change() {
         typing = false;
         console.log("엔터침");
-        socket.emit("typing", {
-          typing: false,
+        socket.emit("chat-typing", {
+          data: {
+            typing: false,
+          },
         });
       }
       function inputChange() {
@@ -163,7 +158,9 @@
         if (typing == false && input.value.length !== 0) {
           // 처음 치기 시작했을때
           socket.emit("chat-typing", {
-            typing: true,
+            data: {
+              typing: true,
+            },
           });
           typing = true;
         } else if (input.value.length == 0) {
@@ -172,7 +169,7 @@
       }
       socket.on("chat-typing", (typingState) => {
         let typingNode = document.getElementById("typing");
-        if (typingState.typing == true) {
+        if (typingState.data.typing == true) {
           typingNode.innerHTML = "사용자가 타이핑중입니다.";
         } else {
           typingNode.innerHTML = "";

@@ -16,8 +16,6 @@ export const broadcastRoomAlert = (io, socket, randomRoom, type) => {
   const handler = {
     join: () => {
       io.to(randomRoom).emit("room-alert", {
-        status: 200,
-        message: "매치 성공",
         date: {
           type: "join",
           joinTime: timeFormat(currentTime),
@@ -29,8 +27,6 @@ export const broadcastRoomAlert = (io, socket, randomRoom, type) => {
     },
     out: () => {
       io.to(randomRoom).emit("room-alert", {
-        status: 204,
-        message: "채팅방 종료",
         data: {
           type: "out",
           roomOutTime: timeFormat(currentTime),
@@ -42,9 +38,8 @@ export const broadcastRoomAlert = (io, socket, randomRoom, type) => {
     },
     midnight: () => {
       io.to(randomRoom).emit("room-alert", {
-        status: 206,
-        message: "자정알림",
         data: {
+          type: "midnight",
           midnight: midnight(currentTime),
         },
       });
@@ -68,24 +63,13 @@ export const broadcastEmitMessage = (
   const currentTime = new Date();
   io.timeout(1000)
     .to(randomRoom)
-    .emit(
-      "chat-message",
-      {
-        status: 201,
-        message: "수신",
-        data: {
-          chatMessageIdx: messageIdx,
-          chatTime: timeFormat(currentTime),
-          senderId: socket.id,
-          nickName: socket.nickname || null,
-          chatMessage: message,
-        },
+    .emit("chat-message", {
+      data: {
+        chatMessageIdx: messageIdx,
+        chatTime: timeFormat(currentTime),
+        senderId: socket.id,
+        nickName: socket.nickname || null,
+        chatMessage: message,
       },
-      (err, response) => {
-        if (err) {
-          throw new Error("chat-message에서 에러발생");
-        } else {
-        }
-      }
-    );
+    });
 };

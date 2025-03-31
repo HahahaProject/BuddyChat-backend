@@ -71,8 +71,9 @@ io.on("connection", (socket) => {
         // 타임아웃을 시작한다.
         socket.timer = setTimeout(() => {
           socket.emit("match-result", {
-            status: 408,
-            message: "매치 시간초과",
+            data: {
+              type: "timeout",
+            },
           });
         }, 10000);
         // 매칭함수 실행
@@ -230,14 +231,12 @@ io.on("connection", (socket) => {
   });
 
   socket.on("chat-typing", (typingState) => {
-    try {
-      const room = [...socket.rooms];
-      socket.broadcast.to(room[1]).emit("chat-typing", {
-        typing: typingState.typing,
-      });
-    } catch (err) {
-      console.loe("typing에서 서버에러 ");
-    }
+    const room = [...socket.rooms];
+    socket.broadcast.to(room[1]).emit("chat-typing", {
+      data: {
+        typing: typingState.data.typing,
+      },
+    });
   });
 
   cron.schedule("0 0 0 * * *", () => {
