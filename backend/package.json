@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "start": "pm2 start index.js --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "\"정이령\"",
@@ -15,6 +16,7 @@
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "node-cron": "^3.0.3",
+    "pm2": "^6.0.5",
     "socket.io": "^4.8.1",
     "uuid": "^11.1.0"
   }
