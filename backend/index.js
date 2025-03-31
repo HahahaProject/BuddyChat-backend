@@ -4,11 +4,26 @@ import { Server } from "socket.io";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { socketController } from "./socket/controller.js";
-
+import cors from "cors";
+import "dotenv/config";
 const app = express();
 const server = http.createServer(app);
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    credentials: true,
+    methods: ["GET", "POST"],
+  },
+});
+
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+  })
+);
 
 app.use(
   express.static("/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend")
@@ -26,6 +41,7 @@ io.on("connection", (socket) => {
   socketController(socket, io);
 });
 
-server.listen(5000, () => {
-  console.log("5000포트에서 서버 실행중");
+const currentTime = new Date().toString();
+server.listen(process.env.PORT, () => {
+  console.log(`${process.env.PORT}포트에서 ${currentTime}현재 웹서버 실행중`);
 });
