@@ -74,7 +74,10 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      const socket = io("https://buddychat.asia", { autoConnect: false });
+      const socket = io("https://buddychat.asia", {
+        autoConnect: false,
+        transports: ["websocket"],
+      });
 
       const form = document.getElementById("form");
       const input = document.getElementById("input");
