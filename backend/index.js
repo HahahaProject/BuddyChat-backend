@@ -41,13 +41,6 @@ app.get("/", (req, res) => {
 // });
 // express.static("/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend")
 // "/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend/chatRoom.html"
-app.use((req, res, next) => {
-  if (!req.secure) {
-    console.log("여기 실행중");
-    return res.redirect("https://" + req.headers.host + req.url);
-  }
-  next();
-});
 
 const io = new Server(httpServer, {
   cors: {
