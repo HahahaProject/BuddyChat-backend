@@ -43,6 +43,7 @@ app.get("/", (req, res) => {
 // "/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend/chatRoom.html"
 app.use((req, res, next) => {
   if (!req.secure) {
+    console.log("여기 실행중");
     return res.redirect("https://" + req.headers.host + req.url);
   }
   next();
