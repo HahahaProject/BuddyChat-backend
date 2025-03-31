@@ -33,11 +33,13 @@ app.use(
 );
 
 app.use(
-  express.static("/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend")
+  // express.static("/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend")
+  express.static("/root/BuddyChat-backend/frontend")
 );
 app.get("/", (req, res) => {
   res.sendFile(
-    "/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend/chatRoom.html"
+    // "/Users/jung-yiryung/Desktop/buddyChat_demo_v2/frontend/chatRoom.html"
+    "/root/BuddyChat-backend/frontend/chatRoom.html"
   );
 });
 
