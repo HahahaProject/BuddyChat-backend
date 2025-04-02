@@ -16,7 +16,7 @@ export const broadcastRoomAlert = (io, socket, randomRoom, type) => {
   const handler = {
     join: () => {
       io.to(randomRoom).emit("room-alert", {
-        date: {
+        data: {
           type: "join",
           joinTime: timeFormat(currentTime),
           nickName: socket.nickName || null,
