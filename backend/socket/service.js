@@ -107,10 +107,7 @@ export const roomOutsideService = (socket, io) => {
       console.log("상대가 disconnect되고있는 중일때?");
       socket.leave(room[1]);
       socket.roomListIdx = undefined;
-      return callback({
-        status: 204,
-        message: "나가기성공",
-      });
+      return;
     }
 
     let partnerSocket;
