@@ -98,6 +98,7 @@ export const matchCancelService = (socket, io) => {
 };
 
 export const roomOutsideService = (socket, io) => {
+  // test위한 주석추가
   return wrapper((callback) => {
     const room = [...socket.rooms];
     const roomListIdx = socket.roomListIdx;
