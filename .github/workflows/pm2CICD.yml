@@ -1,0 +1,22 @@
+name: buddyChat first CI
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+
+jobs:
+  pm2-cicd:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: remote ssh commands
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.NCLOUD_BUDDYCHAT_HOST}}
+          username: ${{secrets.NCLOUD_BUDDYCHAT_USERNAME}}
+          password: ${{ secrets.NCLOUD_BUDDYCHAT_PASSWORD }}
+          port: ${{ secrets.NCLOUD_BUDDYCHAT_PORT }}
+          script: |
+            cd BuddyChat-backend
+            git pull origin main
+            npm install
