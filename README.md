@@ -30,6 +30,6 @@ BuddyChat은 익명성을 보장하는 1 : 1 랜덤 채팅 서비스입니다.
 
 ## :mag: 시스템아키텍처
 * v1.0.0-alpha 아키텍처
-![Image](https://github.com/user-attachments/assets/611f7259-7398-4d80-bb97-4ce406c52958)
+![Image](https://github.com/user-attachments/assets/404370f2-dee3-4d11-b3e8-965042f40220)
 
   
