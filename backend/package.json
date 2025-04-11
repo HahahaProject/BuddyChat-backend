@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "pm2 start index.js --watch",
+    "start": "pm2 start ecosystem.config.js --only buddyCaht",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "\"정이령\"",
