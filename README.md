@@ -28,6 +28,8 @@ BuddyChat은 익명성을 보장하는 1 : 1 랜덤 채팅 서비스입니다.
 | :--: | :--: | 
 | v1.0.0-alpha | ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)![Socket.io](https://img.shields.io/badge/Socket.io-black?style=for-the-badge&logo=socket.io&badgeColor=010101) |
 
-
+## :mag: 시스템아키텍처
+* v1.0.0-alpha 아키텍처
+![Image](https://github.com/user-attachments/assets/611f7259-7398-4d80-bb97-4ce406c52958)
 
   
