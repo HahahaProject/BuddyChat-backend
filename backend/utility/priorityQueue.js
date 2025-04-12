@@ -56,9 +56,9 @@ export class PriorityQueue {
           heap[pos].enterTime
         ) > 0
       ) {
-        this.percolateUp(pos);
+        return this.percolateUp(pos);
       } else {
-        this.percolateDown(pos);
+        return this.percolateDown(pos);
       }
     }
   }
@@ -92,6 +92,7 @@ export class PriorityQueue {
     }
 
     heap[pos] = item;
+    return pos;
   }
 
   shift(pos) {
