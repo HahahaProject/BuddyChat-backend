@@ -49,6 +49,7 @@ export class PriorityQueue {
     heap.splice(pos, 1);
     size = --this.#size;
     if (size > 0 && pos <= size) {
+      console.log("여기 실행됨");
       if (
         pos > 1 &&
         this.#compare(
