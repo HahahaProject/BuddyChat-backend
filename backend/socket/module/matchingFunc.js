@@ -116,6 +116,7 @@ export const customTimeoutQueueOut = (socket) => {
 
 export const matchCancel = (socket) => {
   try {
+    let myPos;
     const currentQueueStatus = priorityQueue.peekAll();
     currentQueueStatus.filter((elem, idx, arr) => {
       if (elem.id == socket.id) myPos = idx;
