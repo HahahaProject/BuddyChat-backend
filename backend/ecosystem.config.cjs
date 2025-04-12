@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "buddyChat",
-      script: "index.js",
+      script: "./index.js",
       watch: true,
       autorestart: true,
     },
