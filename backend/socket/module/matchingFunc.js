@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { PriorityQueue } from "#utility/priorityQueue.js";
 
 let priorityQueue = new PriorityQueue();
+let myPos;
 export let userClickTracker = new Set(); // 중복버튼 클릭인지 확인용
 
 export const queueIn = (socket) => {
@@ -23,7 +24,7 @@ export const queueIn = (socket) => {
       // 근데 애초에 이게 왜 걸러지지가 않지?
       // checkUsers에 없나봐
       // 왜 없지? checkUsers는 어떻때 이슨거지?
-      socket.myPosInQueue = priorityQueue.insert(insertInfo);
+      priorityQueue.insert(insertInfo);
       userClickTracker.add(socket.id);
       console.log("userClickTracker add", userClickTracker);
       console.log("현재 priorityqueue상태", priorityQueue.peekAll());
@@ -69,10 +70,14 @@ export const matching = (socket) => {
     if (partner) {
       console.log("2-1. 매칭할 사람이 있어요.");
       //나 힙에서 제거
-      me = priorityQueue.shift(socket.myPosInQueue);
+      currentQueueStatus = priorityQueue.peekAll();
+      currentQueueStatus.filter((elem, idx, arr) => {
+        if (elem.id == socket.id) myPos = idx;
+      });
+      me = priorityQueue.shift(myPos);
       //파트너 힙에서 제거
       let partnerPos;
-      currentQueueStatus = priorityQueue.peekAll();
+
       currentQueueStatus.filter((elem, idx, arr) => {
         if (elem == partner) partnerPos = idx;
       });
@@ -101,14 +106,14 @@ export const matching = (socket) => {
 
 export const CustomTimeoutQueueOut = (socket) => {
   try {
-    if (socket.myPosInQueue === undefined) {
-      // 원인: matchStartService 중일때 소켓의 타임아웃이 실행된 경우
-      // 매칭된것이므로 그냥 return 함.
-      return;
-    }
-    console.log("socekt.myPosInQueue", socket.myPosInQueue);
-    socket.myPosInQueue = priorityQueue.removeAt(socket.myPosInQueue);
-    console.log("CustomTimeout에서 MyPosInfo", socket.myPosInQueue);
+    const currentQueueStatus = priorityQueue.peekAll();
+    currentQueueStatus.filter((elem, idx, arr) => {
+      if (elem.id == socket.id) myPos = idx;
+    });
+    priorityQueue.removeAt(myPos);
+    // 여기를 어떻게 짜야 효율적으로 짤까?
+    //
+    console.log("CustomTimeout에서 MyPosInfo", myPos);
     console.log("customTimeout에서 queue현재상태", priorityQueue.peekAll());
   } catch (err) {
     console.log("CustomTimeoutQueueOut 에서 에러", err);
@@ -117,12 +122,14 @@ export const CustomTimeoutQueueOut = (socket) => {
 
 export const matchCancel = (socket) => {
   try {
-    if (socket.myPosInQueue) {
-      socket.myPosInQueue = priorityQueue.removeAt(socket.myPosInQueue);
-      console.log("matchCancel에서 MyPosInfo", socket.myPosInQueue);
-      console.log("matchCancle에서 queue현재상태", priorityQueue.peekAll());
-      userClickTracker.delete(socket.id);
-    }
+    const currentQueueStatus = priorityQueue.peekAll();
+    currentQueueStatus.filter((elem, idx, arr) => {
+      if (elem.id == socket.id) myPos = idx;
+    });
+    priorityQueue.removeAt(myPos);
+    console.log("matchCancel에서 MyPosInfo", myPos);
+    console.log("matchCancle에서 queue현재상태", priorityQueue.peekAll());
+    userClickTracker.delete(socket.id);
   } catch (err) {
     console.log("matchCancel에서 에러", err);
   }
