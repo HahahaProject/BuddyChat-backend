@@ -103,7 +103,7 @@ export const CustomTimeoutQueueOut = (socket) => {
     const currentQueueStatus = priorityQueue.peekAll();
     console.log("currentQueueStatus", currentQueueStatus);
     currentQueueStatus.filter((elem, idx, arr) => {
-      if (elem.id == socket.id) myPos = idx;
+      if (elem.id === socket.id) myPos = idx;
     });
     console.log("CustomTimeout mypos", myPos);
     priorityQueue.removeAt(myPos);
