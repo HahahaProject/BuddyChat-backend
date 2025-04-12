@@ -64,7 +64,6 @@ export class PriorityQueue {
       ) {
         return this.percolateUp(pos);
       } else {
-        console.log("removeat 밑에 ", resultPos);
         return this.percolateDown(pos);
       }
     } else {

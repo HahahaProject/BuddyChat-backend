@@ -86,7 +86,6 @@ export const matching = (socket) => {
       const chatStartTime = Date.now();
       const randomRoom = uuidv4();
 
-      // userClickTracker.delete(socket.id);
       userClickTrackerDelete(socket.id, partner.id);
       console.log("Matching 시 userClickTracker", userClickTracker); //본인의 socketid가 없어야
 
