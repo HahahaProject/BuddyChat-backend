@@ -92,7 +92,7 @@ export const matching = (socket) => {
   }
 };
 
-export const timeoutQueueOut = (socket) => {
+export const CustomTimeoutQueueOut = (socket) => {
   console.log("socekt.myPosInQueue", socket.myPosInQueue);
 };
 
