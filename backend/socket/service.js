@@ -9,7 +9,7 @@ import {
   matchCancel,
   checkUsers,
   checkUsersDelete,
-  timeoutQueueOut,
+  CustomTimeoutQueueOut,
 } from "#module/matchingFunc.js";
 import { bothTimeout } from "../utility/time.js";
 import { wrapper } from "../utility/wrapper.js";
@@ -56,7 +56,7 @@ export const matchStartService = (socket, io) => {
           type: "timeout",
         },
       });
-      timeoutQueueOut(socket);
+      CustomTimeoutQueueOut(socket);
       checkUsers.delete(socket.id);
     }, 10000);
     // 매칭함수 실행
