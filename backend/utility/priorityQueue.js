@@ -38,6 +38,8 @@ export class PriorityQueue {
   removeAt(pos) {
     const heap = this.#heap;
     let size = this.#size;
+    console.log("Removeat에서 pos", pos);
+    console.log("RemoveAt에서 size", size);
     if (pos > size || pos < 1) {
       throw new Error("유효하지 않은 pos값.");
     }
