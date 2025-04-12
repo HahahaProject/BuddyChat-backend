@@ -115,6 +115,8 @@ export const matchCancelService = (socket, io) => {
   return wrapper((callback) => {
     matchCancel(socket);
     clearTimeout(socket.timer);
+    // 중복누름 확인용 set에서 제거
+    userClickTracker.delete(socket.id);
     callback({
       status: 204,
       message: "매치취소",
