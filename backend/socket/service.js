@@ -16,6 +16,7 @@ import { bothTimeout } from "../utility/time.js";
 import { wrapper } from "../utility/wrapper.js";
 import { setSocketProperties } from "../utility/addProperties.js";
 
+let pendingMatch = new Set();
 let matchingResult;
 let roomList = new Map();
 let roomLatestMessageIdx = new Map();
@@ -33,6 +34,7 @@ export const matchStartService = (socket, io) => {
     // 1. 대기열에 등록
     // - 종료되엇는데 계속 채팅이 가는 이유
     // - 왜
+
     let returnSocket = queueIn(socket);
 
     // 2. 중복인지 매칭인지 확인한다.
@@ -53,6 +55,9 @@ export const matchStartService = (socket, io) => {
     socket.timer = setTimeout(() => {
       console.log("현재 타입아웃 실행됨");
       console.log("현재 소켓 id", socket.id);
+      if (pendingMatch.has(socket.id)) {
+        return;
+      }
       socket.emit("match-result", {
         data: {
           type: "timeout",
@@ -61,21 +66,28 @@ export const matchStartService = (socket, io) => {
       CustomTimeoutQueueOut(socket);
       userClickTracker.delete(socket.id);
     }, 10000);
+
+    // match 로직이 너무 길어서 pendingMatch로 lock여부 추가
+    pendingMatch.add(socket.id);
     // 매칭함수 실행
     matchingResult = matching(socket);
-    let partnerSocket;
 
     // 매칭실패시 종료
-    if (!matchingResult) return;
+    if (!matchingResult) {
+      pendingMatch.delete(socket.id);
+      return;
+    }
 
-    // 매칭성공시
-    console.log("매칭성공");
     roomList.set(count, matchingResult);
 
+    let partnerSocket;
     partnerSocket = io.sockets.sockets.get(matchingResult.partner.id);
 
     // 파트너소켓이 없으면 종료
-    if (!partnerSocket) return;
+    if (!partnerSocket) {
+      pendingMatch.delete(socket.id);
+      return;
+    }
 
     setSocketProperties(
       {
@@ -94,6 +106,8 @@ export const matchStartService = (socket, io) => {
     bothTimeout(socket, partnerSocket);
     bothJoinRoom(socket, partnerSocket, matchingResult.randomRoom);
     broadcastRoomAlert(io, socket, matchingResult.randomRoom, "join");
+    pendingMatch.delete(socket.id);
+    console.log("매칭성공");
   });
 };
 
