@@ -5,6 +5,7 @@ let priorityQueue = new PriorityQueue();
 export let userClickTracker = new Set(); // 중복버튼 클릭인지 확인용
 
 export const queueIn = (socket) => {
+  console.log("queueIn실행중");
   console.log("현재 본인 socket.id", socket.id);
   console.log("queueIn에서 userClickTracker", userClickTracker);
   // 중복을 검사해서 줄복이면 우선순위큐에 넣지않음.
@@ -41,6 +42,7 @@ export const queueIn = (socket) => {
 };
 
 export const matching = (socket) => {
+  console.log("matching 실행중");
   // socketid가 했었던 pairList를 반환받음.
   // checkUserPair는 pair를 했던 사람들의 기록
   let currentQueueStatus = priorityQueue.peekAll();
@@ -82,7 +84,6 @@ export const matching = (socket) => {
       // userClickTracker.delete(socket.id);
       userClickTrackerDelete(socket.id, partner.id);
       console.log("Matching 시 userClickTracker", userClickTracker); //본인의 socketid가 없어야
-      socket.myPosInQueue = undefined;
 
       return {
         type: "random",
@@ -100,6 +101,11 @@ export const matching = (socket) => {
 
 export const CustomTimeoutQueueOut = (socket) => {
   try {
+    if (socket.myPosInQueue === undefined) {
+      // 원인: matchStartService 중일때 소켓의 타임아웃이 실행된 경우
+      // 매칭된것이므로 그냥 return 함.
+      return;
+    }
     console.log("socekt.myPosInQueue", socket.myPosInQueue);
     socket.myPosInQueue = priorityQueue.removeAt(socket.myPosInQueue);
     console.log("customTimeout에서 queue현재상태", priorityQueue.peekAll());
