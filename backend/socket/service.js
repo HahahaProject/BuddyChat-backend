@@ -103,8 +103,12 @@ export const roomOutsideService = (socket, io) => {
     const room = [...socket.rooms];
     const roomListIdx = socket.roomListIdx;
     const roomInfo = roomList.get(roomListIdx);
+    console.log("현재 roomInfo", roomInfo);
 
     if (!roomInfo) {
+      // 홈버튼을 눌렀을때
+      // 여기가 언제?
+
       console.log("상대가 disconnect되고있는 중일때?");
       socket.leave(room[1]);
       socket.roomListIdx = undefined;
