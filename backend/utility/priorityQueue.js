@@ -10,7 +10,7 @@ export class PriorityQueue {
   insert(value) {
     const heap = this.#heap;
     const pos = ++this.#size;
-    heap[pos] = value;
+    heap[pos] = value; // 값은 인덱스 1위치부터 들어감.
 
     const returnPos = this.percolateUp(pos);
     return returnPos;
@@ -38,15 +38,18 @@ export class PriorityQueue {
   removeAt(pos) {
     const heap = this.#heap;
     let size = this.#size;
+    console.log("removeat에서 heap", heap);
     console.log("Removeat에서 pos", pos);
     console.log("RemoveAt에서 size", size);
     if (pos > size || pos < 1) {
       throw new Error("유효하지 않은 pos값.");
     }
     if (pos !== size) {
+      // 인덱스 pos를 지우는 과정.
       heap[pos] = heap[size];
     }
     heap.splice(pos, 1);
+    console.log("현재 heap", heap);
     size = --this.#size;
     if (size > 0 && pos <= size) {
       console.log("여기 실행됨");
@@ -65,6 +68,8 @@ export class PriorityQueue {
         console.log("removeat 밑에 ", resultPos);
         return resultPos;
       }
+    } else {
+      return undefined;
     }
   }
   // 자식노드와 비교 및 밑으로 정렬
