@@ -94,6 +94,8 @@ export const matching = (socket) => {
 
 export const CustomTimeoutQueueOut = (socket) => {
   console.log("socekt.myPosInQueue", socket.myPosInQueue);
+  priorityQueue.removeAt(socket.myPosInQueue);
+  console.log("customTimeout에서 queue현재상태", priorityQueue.peekAll());
 };
 
 export const matchCancel = (socket) => {
