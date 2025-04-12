@@ -102,7 +102,6 @@ export const CustomTimeoutQueueOut = (socket) => {
   try {
     console.log("socekt.myPosInQueue", socket.myPosInQueue);
     socket.myPosInQueue = priorityQueue.removeAt(socket.myPosInQueue);
-
     console.log("customTimeout에서 queue현재상태", priorityQueue.peekAll());
   } catch (err) {
     console.log("CustomTimeoutQueueOut 에서 에러", err);
@@ -113,6 +112,7 @@ export const matchCancel = (socket) => {
   try {
     if (socket.myPosInQueue) {
       socket.myPosInQueue = priorityQueue.removeAt(socket.myPosInQueue);
+      console.log("matchCancle에서 queue현재상태", priorityQueue.peekAll());
       userClickTracker.delete(socket.id);
     }
   } catch (err) {
