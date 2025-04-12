@@ -92,9 +92,18 @@ export const matching = (socket) => {
   }
 };
 
+export const timeoutQueueOut = (socket) => {
+  console.log("socekt.myPosInQueue", socket.myPosInQueue);
+};
+
 export const matchCancel = (socket) => {
   if (socket.myPosInQueue) {
     priorityQueue.removeAt(socket.myPosInQueue);
     checkUsers.delete(socket.id);
   }
+};
+
+export const checkUsersDelete = (socketId, partnerId) => {
+  checkUsers.delete(socketId);
+  checkUsers.delete(partnerId);
 };

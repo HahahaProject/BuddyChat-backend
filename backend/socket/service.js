@@ -4,11 +4,15 @@ import {
   broadcastRoomAlert,
   broadcastEmitMessage,
 } from "./module/socketFunc.js";
-import { queueIn, matching } from "./module/matchingFunc.js";
-import { matchCancel, checkUsers } from "#module/matchingFunc.js";
+import { queueIn, matching, timeoutQueueOut } from "./module/matchingFunc.js";
+import {
+  matchCancel,
+  checkUsers,
+  checkUsersDelete,
+  timeoutQueueOut,
+} from "#module/matchingFunc.js";
 import { bothTimeout } from "../utility/time.js";
 import { wrapper } from "../utility/wrapper.js";
-import { checkUsersDelete } from "../utility/checkUserDelete.js";
 import { setSocketProperties } from "../utility/addProperties.js";
 
 let matchingResult;
@@ -52,6 +56,7 @@ export const matchStartService = (socket, io) => {
           type: "timeout",
         },
       });
+      timeoutQueueOut(socket);
       checkUsers.delete(socket.id);
     }, 10000);
     // 매칭함수 실행
