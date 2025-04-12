@@ -93,15 +93,23 @@ export const matching = (socket) => {
 };
 
 export const CustomTimeoutQueueOut = (socket) => {
-  console.log("socekt.myPosInQueue", socket.myPosInQueue);
-  priorityQueue.removeAt(socket.myPosInQueue);
-  console.log("customTimeout에서 queue현재상태", priorityQueue.peekAll());
+  try {
+    console.log("socekt.myPosInQueue", socket.myPosInQueue);
+    priorityQueue.removeAt(socket.myPosInQueue);
+    console.log("customTimeout에서 queue현재상태", priorityQueue.peekAll());
+  } catch (err) {
+    console.log("CustomTimeoutQueueOut 에서 에러");
+  }
 };
 
 export const matchCancel = (socket) => {
-  if (socket.myPosInQueue) {
-    priorityQueue.removeAt(socket.myPosInQueue);
-    checkUsers.delete(socket.id);
+  try {
+    if (socket.myPosInQueue) {
+      priorityQueue.removeAt(socket.myPosInQueue);
+      checkUsers.delete(socket.id);
+    }
+  } catch (err) {
+    console.log("matchCancel에서 에러");
   }
 };
 
