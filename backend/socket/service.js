@@ -10,7 +10,7 @@ import {
   matchCancel,
   userClickTracker,
   userClickTrackerDelete,
-  CustomTimeoutQueueOut,
+  customTimeoutQueueOut,
   leftQueue,
 } from "#module/matchingFunc.js";
 import { bothTimeout } from "../utility/time.js";
@@ -64,7 +64,7 @@ export const matchStartService = (socket, io) => {
           type: "timeout",
         },
       });
-      CustomTimeoutQueueOut(socket);
+      customTimeoutQueueOut(socket);
       userClickTracker.delete(socket.id);
     }, 10000);
 
