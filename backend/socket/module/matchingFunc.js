@@ -107,9 +107,11 @@ export const matching = (socket) => {
 export const CustomTimeoutQueueOut = (socket) => {
   try {
     const currentQueueStatus = priorityQueue.peekAll();
+    console.log("currentQueueStatus", currentQueueStatus);
     currentQueueStatus.filter((elem, idx, arr) => {
       if (elem.id == socket.id) myPos = idx;
     });
+    console.log("CustomTimeout mypos", myPos);
     priorityQueue.removeAt(myPos);
     // 여기를 어떻게 짜야 효율적으로 짤까?
     //
