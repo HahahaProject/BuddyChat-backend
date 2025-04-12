@@ -2,29 +2,34 @@ import { v4 as uuidv4 } from "uuid";
 import { PriorityQueue } from "#utility/priorityQueue.js";
 
 let priorityQueue = new PriorityQueue();
-export let checkUsers = new Set(); // 중복버튼 클릭인지 확인용
+export let userClickTracker = new Set(); // 중복버튼 클릭인지 확인용
 
 export const queueIn = (socket) => {
   console.log("현재 본인 socket.id", socket.id);
-  console.log("queueIn에서 checkUsers", checkUsers);
+  console.log("queueIn에서 userClickTracker", userClickTracker);
   // 중복을 검사해서 줄복이면 우선순위큐에 넣지않음.
   // 짝지어진 적이 있는 경우 모음
   try {
-    if (!checkUsers.has(socket.id)) {
+    if (!userClickTracker.has(socket.id)) {
       const insertInfo = {
         id: socket.id,
         enterTime: socket.enterTime,
       };
       // 왜 중복등록이 발생함이 안나오지?
       // priorityQueue안에
+      const currentQueueStatus = priorityQueue.peekAll();
+      // 배열인데 배열의 id중에서 socket.id와 같으면 안넣을거야.
+      // 근데 애초에 이게 왜 걸러지지가 않지?
+      // checkUsers에 없나봐
+      // 왜 없지? checkUsers는 어떻때 이슨거지?
       socket.myPosInQueue = priorityQueue.insert(insertInfo);
-      checkUsers.add(socket.id);
-      console.log("checkUsers add", checkUsers);
+      userClickTracker.add(socket.id);
+      console.log("userClickTracker add", userClickTracker);
       console.log("현재 priorityqueue상태", priorityQueue.peekAll());
       return socket;
     } else {
       //중복등록함
-      console.log("중복등록이 발생함", checkUsers);
+      console.log("중복등록이 발생함", userClickTracker);
       return false;
     }
   } catch (err) {
@@ -74,8 +79,8 @@ export const matching = (socket) => {
       const chatStartTime = Date.now();
       const randomRoom = uuidv4();
 
-      checkUsers.delete(socket.id);
-      console.log("Matching 시 checkUsers", checkUsers);
+      userClickTracker.delete(socket.id);
+      console.log("Matching 시 userClickTracker", userClickTracker); //본인의 socketid가 없어야
       socket.myPosInQueue = undefined;
 
       return {
@@ -98,7 +103,7 @@ export const CustomTimeoutQueueOut = (socket) => {
     priorityQueue.removeAt(socket.myPosInQueue);
     console.log("customTimeout에서 queue현재상태", priorityQueue.peekAll());
   } catch (err) {
-    console.log("CustomTimeoutQueueOut 에서 에러");
+    console.log("CustomTimeoutQueueOut 에서 에러", err);
   }
 };
 
@@ -106,14 +111,14 @@ export const matchCancel = (socket) => {
   try {
     if (socket.myPosInQueue) {
       priorityQueue.removeAt(socket.myPosInQueue);
-      checkUsers.delete(socket.id);
+      userClickTracker.delete(socket.id);
     }
   } catch (err) {
-    console.log("matchCancel에서 에러");
+    console.log("matchCancel에서 에러", err);
   }
 };
 
-export const checkUsersDelete = (socketId, partnerId) => {
-  checkUsers.delete(socketId);
-  checkUsers.delete(partnerId);
+export const userClickTrackerDelete = (socketId, partnerId) => {
+  userClickTracker.delete(socketId);
+  userClickTracker.delete(partnerId);
 };
