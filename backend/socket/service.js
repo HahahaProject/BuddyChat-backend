@@ -5,7 +5,7 @@ import {
   broadcastEmitMessage,
 } from "./module/socketFunc.js";
 import { queueIn, matching } from "./module/matchingFunc.js";
-import { matchCancel, checkUsers } from "./module/matchingFunc.js";
+import { matchCancel, checkUsers } from "#module/matchingFunc.js";
 import { bothTimeout } from "../utility/time.js";
 import { wrapper } from "../utility/wrapper.js";
 import { checkUsersDelete } from "../utility/checkUserDelete.js";

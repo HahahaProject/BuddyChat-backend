@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { PriorityQueue } from "../../utility/priorityQueue.js";
+import { PriorityQueue } from "#utility/priorityQueue.js";
 
 let priorityQueue = new PriorityQueue();
 export let checkUsers = new Set(); // 중복버튼 클릭인지 확인용
