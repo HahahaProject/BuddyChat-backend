@@ -32,6 +32,8 @@ export class PriorityQueue {
     }
 
     heap[pos] = item;
+    console.log("percolateUp heap", heap);
+    console.log("percolate pos", pos);
     return pos;
   }
   // 노드삭제
