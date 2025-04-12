@@ -46,6 +46,7 @@ export const matchStartService = (socket, io) => {
     });
     // 타임아웃을 시작한다.
     socket.timer = setTimeout(() => {
+      console.log("현재 타입아웃 실행됨");
       socket.emit("match-result", {
         data: {
           type: "timeout",
