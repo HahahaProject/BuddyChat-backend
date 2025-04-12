@@ -86,9 +86,6 @@ export const matching = (socket) => {
       const chatStartTime = Date.now();
       const randomRoom = uuidv4();
 
-      userClickTrackerDelete(socket.id, partner.id);
-      console.log("Matching 시 userClickTracker", userClickTracker); //본인의 socketid가 없어야
-
       return {
         type: "random",
         me: me,
@@ -130,7 +127,6 @@ export const matchCancel = (socket) => {
     priorityQueue.removeAt(myPos);
     console.log("matchCancel에서 MyPosInfo", myPos);
     console.log("matchCancle에서 queue현재상태", priorityQueue.peekAll());
-    userClickTracker.delete(socket.id);
   } catch (err) {
     console.log("matchCancel에서 에러", err);
   }

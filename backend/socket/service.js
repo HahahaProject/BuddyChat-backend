@@ -106,6 +106,7 @@ export const matchStartService = (socket, io) => {
     bothTimeout(socket, partnerSocket);
     bothJoinRoom(socket, partnerSocket, matchingResult.randomRoom);
     broadcastRoomAlert(io, socket, matchingResult.randomRoom, "join");
+    userClickTrackerDelete(socket.id, partnerSocket.id);
     pendingMatch.delete(socket.id);
     console.log("매칭성공");
   });
