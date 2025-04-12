@@ -11,6 +11,7 @@ import {
   userClickTracker,
   userClickTrackerDelete,
   CustomTimeoutQueueOut,
+  leftQueue,
 } from "#module/matchingFunc.js";
 import { bothTimeout } from "../utility/time.js";
 import { wrapper } from "../utility/wrapper.js";
@@ -140,6 +141,7 @@ export const roomOutsideService = (socket, io) => {
       console.log("홈버튼을 눌렀을시");
       userClickTracker.delete(socket.id);
       clearTimeout(socket.timer);
+      leftQueue(socket);
       socket.leave(room[1]);
       socket.roomListIdx = undefined;
       return;
