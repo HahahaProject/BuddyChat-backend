@@ -177,6 +177,7 @@ export const roomOutsideService = (socket, io) => {
     );
     broadcastRoomAlert(io, socket, room[1], "out");
     bothLeaveRoom(socket, partnerSocket, room[1]);
+    console.log("roomoutside채팅종료");
   });
 };
 
@@ -214,6 +215,7 @@ export const disconnectService = (socket, io) => {
         if (!partnerSocket) continue;
         partnerSocket.checkUserPair.delete(socket.id);
       }
+      console.log("disconnect채팅종료");
     } catch (err) {
       console.log("disconnect에서 서버에러", err);
     }
