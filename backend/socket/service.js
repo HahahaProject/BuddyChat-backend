@@ -26,6 +26,8 @@ export const matchStartService = (socket, io) => {
       socket.checkUserPair = new Set();
     }
     // 1. 대기열에 등록
+    // - 종료되엇는데 계속 채팅이 가는 이유
+    // - 왜
     let returnSocket = queueIn(socket);
 
     // 2. 중복인지 매칭인지 확인한다.
@@ -165,6 +167,7 @@ export const disconnectService = (socket, io) => {
       roomLatestMessageIdx.delete(room[1]);
       // 중복누름 확인용 set에서 제거
       checkUsers.delete(socket.id);
+      console.log("disconnect 시 checkUsers", checkUsers);
       // 소켓룸아이디 제거
       socket.roomListIdx = undefined;
       // 현 소켓과 연결되었었던 소켓들의 checkUserPair에서 현소켓 삭제
