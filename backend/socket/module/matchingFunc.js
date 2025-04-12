@@ -20,13 +20,7 @@ export const queueIn = (socket) => {
       // 왜 중복등록이 발생함이 안나오지?
 
       // priorityQueue안에 중복되어 들어가지 않도록
-      const currentQueueStatus = priorityQueue.peekAll();
-      currentQueueStatus.filter((elem, idx, arr) => {
-        if (elem.id === socket.id) {
-          console.log("막기위해 실횅됨");
-          return;
-        }
-      });
+
       console.log("return 했는데 실행됨?");
       priorityQueue.insert(insertInfo);
       userClickTracker.add(socket.id);
@@ -139,4 +133,15 @@ export const matchCancel = (socket) => {
 export const userClickTrackerDelete = (socketId, partnerId) => {
   userClickTracker.delete(socketId);
   userClickTracker.delete(partnerId);
+};
+
+export const leftQueue = (socket) => {
+  const currentQueueStatus = priorityQueue.peekAll();
+  currentQueueStatus.filter((elem, idx, arr) => {
+    if (elem.id === socket.id) {
+      console.log("막기위해 실횅됨");
+      priorityQueue.removeAt(idx);
+      return;
+    }
+  });
 };
