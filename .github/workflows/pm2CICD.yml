@@ -17,6 +17,8 @@ jobs:
           password: ${{ secrets.NCLOUD_BUDDYCHAT_PASSWORD }}
           port: ${{ secrets.NCLOUD_BUDDYCHAT_PORT }}
           script: |
-            cd BuddyChat-backend
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
+            cd ~/BuddyChat-backend/backend
             git pull origin main
             npm install
