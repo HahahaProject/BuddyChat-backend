@@ -1,4 +1,4 @@
-import { checkUsers } from "../socket/module/matchingFunc.js";
+import { checkUsers } from "#module/matchingFunc.js";
 
 export const checkUsersDelete = (socketId, partnerId) => {
   checkUsers.delete(socketId);
