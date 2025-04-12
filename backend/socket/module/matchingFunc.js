@@ -18,8 +18,12 @@ export const queueIn = (socket) => {
         enterTime: socket.enterTime,
       };
       // 왜 중복등록이 발생함이 안나오지?
-      // priorityQueue안에
+
+      // priorityQueue안에 중복되어 들어가지 않도록
       const currentQueueStatus = priorityQueue.peekAll();
+      currentQueueStatus.filter((elem, idx, arr) => {
+        if (elem.id == socket.id) return;
+      });
       // 배열인데 배열의 id중에서 socket.id와 같으면 안넣을거야.
       // 근데 애초에 이게 왜 걸러지지가 않지?
       // checkUsers에 없나봐
