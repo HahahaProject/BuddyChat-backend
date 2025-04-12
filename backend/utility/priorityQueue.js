@@ -57,9 +57,11 @@ export class PriorityQueue {
         ) > 0
       ) {
         const resultPos = this.percolateUp(pos);
+        console.log("removeat 위에 ", resultPos);
         return resultPos;
       } else {
         const resultPos = this.percolateDown(pos);
+        console.log("removeat 밑에 ", resultPos);
         return resultPos;
       }
     }
