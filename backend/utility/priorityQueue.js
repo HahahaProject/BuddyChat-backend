@@ -56,9 +56,11 @@ export class PriorityQueue {
           heap[pos].enterTime
         ) > 0
       ) {
-        return this.percolateUp(pos);
+        const resultPos = this.percolateUp(pos);
+        return resultPos;
       } else {
-        return this.percolateDown(pos);
+        const resultPos = this.percolateDown(pos);
+        return resultPos;
       }
     }
   }
