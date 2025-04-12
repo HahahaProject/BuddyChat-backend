@@ -104,7 +104,7 @@ export const customTimeoutQueueOut = (socket) => {
     const currentQueueStatus = priorityQueue.peekAll();
     let myPos;
     console.log("currentQueueStatus", currentQueueStatus);
-    myPos = currentQueueStatus.findIndex((elem) => elem.id === socket.id);
+    myPos = currentQueueStatus.findIndex((elem) => elem?.id === socket.id);
     console.log("CustomTimeout mypos", myPos);
     priorityQueue.removeAt(myPos);
     // 여기를 어떻게 짜야 효율적으로 짤까?
