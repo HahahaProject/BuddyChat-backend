@@ -4,8 +4,9 @@ import {
   broadcastRoomAlert,
   broadcastEmitMessage,
 } from "./module/socketFunc.js";
-import { queueIn, matching, timeoutQueueOut } from "./module/matchingFunc.js";
 import {
+  queueIn,
+  matching,
   matchCancel,
   checkUsers,
   checkUsersDelete,
