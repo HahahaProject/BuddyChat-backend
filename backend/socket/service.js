@@ -139,7 +139,8 @@ export const roomOutsideService = (socket, io) => {
 
       console.log("홈버튼을 눌렀을시");
       userClickTracker.delete(socket.id);
-      // socket.leave(room[1]);
+      clearTimeout(socket.timer);
+      socket.leave(room[1]);
       socket.roomListIdx = undefined;
       return;
     }
