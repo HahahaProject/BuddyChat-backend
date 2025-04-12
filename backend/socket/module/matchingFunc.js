@@ -98,7 +98,7 @@ export const matching = (socket) => {
   }
 };
 
-export const CustomTimeoutQueueOut = (socket) => {
+export const customTimeoutQueueOut = (socket) => {
   try {
     const currentQueueStatus = priorityQueue.peekAll();
     console.log("currentQueueStatus", currentQueueStatus);
@@ -108,8 +108,6 @@ export const CustomTimeoutQueueOut = (socket) => {
     console.log("CustomTimeout mypos", myPos);
     priorityQueue.removeAt(myPos);
     // 여기를 어떻게 짜야 효율적으로 짤까?
-    //
-    console.log("CustomTimeout에서 MyPosInfo", myPos);
     console.log("customTimeout에서 queue현재상태", priorityQueue.peekAll());
   } catch (err) {
     console.log("CustomTimeoutQueueOut 에서 에러", err);
