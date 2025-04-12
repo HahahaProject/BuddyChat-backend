@@ -5,6 +5,7 @@ let priorityQueue = new PriorityQueue();
 export let checkUsers = new Set(); // 중복버튼 클릭인지 확인용
 
 export const queueIn = (socket) => {
+  console.log("현재 본인 socket.id", socket.id);
   // 중복을 검사해서 줄복이면 우선순위큐에 넣지않음.
   // 짝지어진 적이 있는 경우 모음
   try {
@@ -70,6 +71,7 @@ export const matching = (socket) => {
       const randomRoom = uuidv4();
 
       checkUsers.delete(socket.id);
+      console.log("Matching 시 checkUsers", checkUsers);
       socket.myPosInQueue = undefined;
 
       return {
@@ -89,5 +91,6 @@ export const matching = (socket) => {
 export const matchCancel = (socket) => {
   if (socket.myPosInQueue) {
     priorityQueue.removeAt(socket.myPosInQueue);
+    checkUsers.delete(socket.id);
   }
 };
