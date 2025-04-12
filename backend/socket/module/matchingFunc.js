@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { PriorityQueue } from "#utility/priorityQueue.js";
 
 let priorityQueue = new PriorityQueue();
-let myPos;
+
 export let userClickTracker = new Set(); // 중복버튼 클릭인지 확인용
 
 export const queueIn = (socket) => {
@@ -67,6 +67,7 @@ export const matching = (socket) => {
 
     if (partner) {
       console.log("2-1. 매칭할 사람이 있어요.");
+      let myPos;
       //나 힙에서 제거
       currentQueueStatus = priorityQueue.peekAll();
       currentQueueStatus.filter((elem, idx, arr) => {
@@ -101,10 +102,9 @@ export const matching = (socket) => {
 export const customTimeoutQueueOut = (socket) => {
   try {
     const currentQueueStatus = priorityQueue.peekAll();
+    let myPos;
     console.log("currentQueueStatus", currentQueueStatus);
-    currentQueueStatus.filter((elem, idx, arr) => {
-      if (elem.id === socket.id) myPos = idx;
-    });
+    myPos = currentQueueStatus.findIndex((elem) => elem.id === socket.id);
     console.log("CustomTimeout mypos", myPos);
     priorityQueue.removeAt(myPos);
     // 여기를 어떻게 짜야 효율적으로 짤까?
@@ -116,6 +116,7 @@ export const customTimeoutQueueOut = (socket) => {
 
 export const matchCancel = (socket) => {
   try {
+    let myPos;
     const currentQueueStatus = priorityQueue.peekAll();
     currentQueueStatus.filter((elem, idx, arr) => {
       if (elem.id == socket.id) myPos = idx;
