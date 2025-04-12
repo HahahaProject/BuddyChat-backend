@@ -14,9 +14,6 @@ export const setSocketProperties = (sockets, data, type) => {
       console.log("roomListCount", roomListCount);
       socket.roomListIdx = roomListCount;
       partnerSocket.roomListIdx = roomListCount;
-      // queue내에서의 정보 초기화
-      socket.myPosInQueue = undefined;
-      partnerSocket.myPosInQueue = undefined;
       // 채팅시작시간 저장
       socket.chatStartTime = Date.now();
       partnerSocket.chatStartTime = Date.now();
@@ -29,8 +26,6 @@ export const setSocketProperties = (sockets, data, type) => {
       partnerSocket.chatEndTime = dateNow;
       socket.roomListIdx = undefined;
       partnerSocket.roomListIdx = undefined;
-      socket.myPosInQueue = undefined;
-      partnerSocket.myPosInQueue = undefined;
     },
   };
   const resultFunction = handle[type];

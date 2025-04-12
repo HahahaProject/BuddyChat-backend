@@ -62,13 +62,10 @@ export class PriorityQueue {
           heap[pos].enterTime
         ) > 0
       ) {
-        const resultPos = this.percolateUp(pos);
-        console.log("removeat 위에 ", resultPos);
-        return resultPos;
+        return this.percolateUp(pos);
       } else {
-        const resultPos = this.percolateDown(pos);
         console.log("removeat 밑에 ", resultPos);
-        return resultPos;
+        return this.percolateDown(pos);
       }
     } else {
       return undefined;
