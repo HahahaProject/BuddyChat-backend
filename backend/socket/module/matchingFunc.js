@@ -22,12 +22,12 @@ export const queueIn = (socket) => {
       // priorityQueue안에 중복되어 들어가지 않도록
       const currentQueueStatus = priorityQueue.peekAll();
       currentQueueStatus.filter((elem, idx, arr) => {
-        if (elem.id == socket.id) return;
+        if (elem.id === socket.id) {
+          console.log("막기위해 실횅됨");
+          return;
+        }
       });
-      // 배열인데 배열의 id중에서 socket.id와 같으면 안넣을거야.
-      // 근데 애초에 이게 왜 걸러지지가 않지?
-      // checkUsers에 없나봐
-      // 왜 없지? checkUsers는 어떻때 이슨거지?
+      console.log("return 했는데 실행됨?");
       priorityQueue.insert(insertInfo);
       userClickTracker.add(socket.id);
       console.log("userClickTracker add", userClickTracker);
