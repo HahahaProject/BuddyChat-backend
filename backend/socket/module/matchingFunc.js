@@ -98,7 +98,7 @@ export const CustomTimeoutQueueOut = (socket) => {
     priorityQueue.removeAt(socket.myPosInQueue);
     console.log("customTimeout에서 queue현재상태", priorityQueue.peekAll());
   } catch (err) {
-    console.log("CustomTimeoutQueueOut 에서 에러");
+    console.log("CustomTimeoutQueueOut 에서 에러", err);
   }
 };
 
@@ -109,7 +109,7 @@ export const matchCancel = (socket) => {
       checkUsers.delete(socket.id);
     }
   } catch (err) {
-    console.log("matchCancel에서 에러");
+    console.log("matchCancel에서 에러", err);
   }
 };
 
