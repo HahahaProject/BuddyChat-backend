@@ -11,6 +11,7 @@ export const setSocketProperties = (sockets, data, type) => {
   const handle = {
     matchStart: () => {
       // roomList Idx 추가
+      console.log("roomListCount", roomListCount);
       socket.roomListIdx = roomListCount;
       partnerSocket.roomListIdx = roomListCount;
       // queue내에서의 정보 초기화
@@ -28,6 +29,8 @@ export const setSocketProperties = (sockets, data, type) => {
       partnerSocket.chatEndTime = dateNow;
       socket.roomListIdx = undefined;
       partnerSocket.roomListIdx = undefined;
+      socket.myPosInQueue = undefined;
+      partnerSocket.myPosInQueue = undefined;
     },
   };
   const resultFunction = handle[type];

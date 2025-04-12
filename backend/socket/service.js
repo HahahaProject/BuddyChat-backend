@@ -82,7 +82,7 @@ export const matchStartService = (socket, io) => {
         partnerSocket,
       },
       {
-        roomListCount: count,
+        roomListCount: count, // 몇번째 방인지
       },
       "matchStart"
     );
