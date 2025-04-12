@@ -118,7 +118,7 @@ export const matchCancel = (socket) => {
   }
 };
 
-export const checkUsersDelete = (socketId, partnerId) => {
+export const userClickTrackerDelete = (socketId, partnerId) => {
   userClickTracker.delete(socketId);
   userClickTracker.delete(partnerId);
 };

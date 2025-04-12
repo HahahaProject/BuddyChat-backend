@@ -8,8 +8,8 @@ import {
   queueIn,
   matching,
   matchCancel,
-  checkUsers,
-  checkUsersDelete,
+  userClickTracker,
+  userClickTrackerDelete,
   CustomTimeoutQueueOut,
 } from "#module/matchingFunc.js";
 import { bothTimeout } from "../utility/time.js";
@@ -58,7 +58,7 @@ export const matchStartService = (socket, io) => {
         },
       });
       CustomTimeoutQueueOut(socket);
-      checkUsers.delete(socket.id);
+      userClickTracker.delete(socket.id);
     }, 10000);
     // 매칭함수 실행
     matchingResult = matching(socket);
@@ -137,7 +137,7 @@ export const roomOutsideService = (socket, io) => {
     count--;
 
     // 중복누름 확인용 set에서 제거
-    checkUsersDelete(socket.id, partnerSocket.id);
+    userClickTrackerDelete(socket.id, partnerSocket.id);
 
     // room별 messageIdx 지움
     roomLatestMessageIdx.delete(room[1]);
@@ -174,8 +174,8 @@ export const disconnectService = (socket, io) => {
       // 최신 messageIdx 삭제
       roomLatestMessageIdx.delete(room[1]);
       // 중복누름 확인용 set에서 제거
-      checkUsers.delete(socket.id);
-      console.log("disconnect 시 checkUsers", checkUsers);
+      userClickTracker.delete(socket.id);
+      console.log("disconnect 시  userClickTracker", userClickTracker);
       // 소켓룸아이디 제거
       socket.roomListIdx = undefined;
       // 현 소켓과 연결되었었던 소켓들의 checkUserPair에서 현소켓 삭제
