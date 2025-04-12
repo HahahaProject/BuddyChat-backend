@@ -52,6 +52,7 @@ export const matchStartService = (socket, io) => {
           type: "timeout",
         },
       });
+      checkUsers.delete(socket.id);
     }, 10000);
     // 매칭함수 실행
     matchingResult = matching(socket);
