@@ -15,12 +15,15 @@ export const queueIn = (socket) => {
       };
       socket.myPosInQueue = priorityQueue.insert(insertInfo);
       checkUsers.add(socket.id);
+      console.log("현재 priorityqueue상태", priorityQueue.peekAll());
       return socket;
     } else {
       //중복등록함
+      console.log("중복등록이 발생함", checkUsers);
       return false;
     }
   } catch (err) {
+    console.log("에러가 발생함");
     throw new Error("");
     // 여기를 어떻게 쓰지? 써야하나?
     // customerror?
