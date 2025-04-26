@@ -33,9 +33,6 @@ export const matchStartService = (socket, io) => {
       socket.checkUserPair = new Set();
     }
     // 1. 대기열에 등록
-    // - 종료되엇는데 계속 채팅이 가는 이유
-    // - 왜
-
     let returnSocket = queueIn(socket);
 
     // 2. 중복인지 매칭인지 확인한다.
