@@ -6,7 +6,8 @@ BuddyChat은 익명성을 보장하는 1 : 1 랜덤 채팅 서비스입니다.
 ## 📆 프로젝트 기간 2025.02 ~
 | 버전 | 기간 |
 | :--: | :--: | 
-| v1.0.0-alpha | 2025.02 ~ |
+| v1.0.0-alpha | 2025.02 ~ 2025.04|
+| v2.0.0-alpha | 2025.05 ~ |
 
 ## 🤼‍♂️ 팀멤버
 | PM , FE | BE |
@@ -18,6 +19,7 @@ BuddyChat은 익명성을 보장하는 1 : 1 랜덤 채팅 서비스입니다.
 | 버전 | 기능 |
 | :--: | :--: | 
 | v1.0.0-alpha | * 1:1 익명 랜덤 채팅 |
+| v2.0.0-alpha | * TS로 마이그레이션 |
 
 ## 📋 프로젝트 관련문서 
 * [협업노션](https://ribbon-gold-e39.notion.site/BuddyChat-17cb3a2b40a880dea0b1dbaca904bea8?pvs=4)
@@ -27,6 +29,7 @@ BuddyChat은 익명성을 보장하는 1 : 1 랜덤 채팅 서비스입니다.
 | 버전 | 기술 |
 | :--: | :--: | 
 | v1.0.0-alpha | ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)![Socket.io](https://img.shields.io/badge/Socket.io-black?style=for-the-badge&logo=socket.io&badgeColor=010101) |
+| v2.0.0-alpha | ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)![Socket.io](https://img.shields.io/badge/Socket.io-black?style=for-the-badge&logo=socket.io&badgeColor=010101)
 
 ## :mag: 시스템아키텍처
 * v1.0.0-alpha 아키텍처
