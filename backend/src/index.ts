@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { Server } from "socket.io";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { socketController } from "../socket/controller.js";
+import { socketController } from "#socket/controller.js";
 import cors from "cors";
 const app = express();
 const options = {
