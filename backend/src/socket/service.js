@@ -13,9 +13,9 @@ import {
   customTimeoutQueueOut,
   leftQueue,
 } from "#module/matchingFunc.js";
-import { bothTimeout } from "../utility/time.js";
-import { wrapper } from "../utility/wrapper.js";
-import { setSocketProperties } from "../utility/addProperties.js";
+import { bothTimeout } from "../src/utility/time.js";
+import { wrapper } from "../src/utility/wrapper.js";
+import { setSocketProperties } from "../src/utility/addProperties.js";
 
 let pendingMatch = new Set();
 let matchingResult;

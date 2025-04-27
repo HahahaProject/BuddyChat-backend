@@ -1,4 +1,4 @@
-import { timeFormat, midnight, calLapseTime } from "../../utility/time.js";
+import { timeFormat, midnight, calLapseTime } from "../../src/utility/time.js";
 
 export const bothJoinRoom = (socket, partnerSocket, randomRoom) => {
   socket.join(randomRoom);

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { PriorityQueue } from "#utility/priorityQueue.js";
+import { PriorityQueue } from "src/utility/priorityQueue.js";
 
 let priorityQueue = new PriorityQueue();
 
