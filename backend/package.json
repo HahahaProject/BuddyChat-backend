@@ -9,9 +9,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "imports": {
-    "#utility/*": "./src/utility/*",
-    "#socket/*": "./src/socket/*",
-    "#module/*": "./src/socket/module/*"
+    "#utility/*": "./dist/utility/*",
+    "#socket/*": "./dist/socket/*",
+    "#module/*": "./dist/socket/module/*"
   },
   "author": "\"정이령\"",
   "license": "ISC",
